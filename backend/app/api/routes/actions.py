@@ -57,6 +57,7 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest):
     
     top_3_actions = [
         {
+            "action_id": rec["feature"],
             "action": rec["action"],
             "days_saved": rec["days_saved"]
         }
@@ -67,5 +68,15 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest):
     return {
         "days_remaining": calibration["days_to_ready"],
         "current_probability": calibration["credit_readiness_probability"],
-        "top_3_actions": top_3_actions
+        "top_3_actions": top_3_actions,
+        "msme_data": {
+            "msme_id": updated_msme["msme_id"],
+            "discipline_level": updated_msme["discipline_level"],
+            "has_employees": updated_msme["has_employees"],
+            "filing_on_time_rate": updated_msme["filing_on_time_rate"],
+            "upi_trend_slope": updated_msme["upi_trend_slope"],
+            "cashflow_volatility_score": updated_msme["cashflow_volatility_score"],
+            "top_buyer_concentration_pct": updated_msme["top_buyer_concentration_pct"],
+            "payroll_consistency_score": updated_msme["payroll_consistency_score"]
+        }
     }

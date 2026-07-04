@@ -31,6 +31,7 @@ def get_msme_score(msme_id: str):
     # 3. Format the top 3 actionable recommendations
     top_3_actions = [
         {
+            "action_id": rec["feature"],
             "action": rec["action"],
             "days_saved": rec["days_saved"]
         }
@@ -41,7 +42,9 @@ def get_msme_score(msme_id: str):
     shap_raw = explain_prediction(features, filter_negative=False)
     shap_breakdown = [
         {
+            "feature": item["feature"],
             "label": item["label"],
+            "shap_value": round(item["shap_value"], 4),
             "reason": item["reason"]
         }
         for item in shap_raw
@@ -52,5 +55,15 @@ def get_msme_score(msme_id: str):
         "days_remaining": calibration["days_to_ready"],
         "current_probability": calibration["credit_readiness_probability"],
         "top_3_actions": top_3_actions,
-        "shap_breakdown": shap_breakdown
+        "shap_breakdown": shap_breakdown,
+        "msme_data": {
+            "msme_id": msme_data["msme_id"],
+            "discipline_level": msme_data["discipline_level"],
+            "has_employees": msme_data["has_employees"],
+            "filing_on_time_rate": msme_data["filing_on_time_rate"],
+            "upi_trend_slope": msme_data["upi_trend_slope"],
+            "cashflow_volatility_score": msme_data["cashflow_volatility_score"],
+            "top_buyer_concentration_pct": msme_data["top_buyer_concentration_pct"],
+            "payroll_consistency_score": msme_data["payroll_consistency_score"]
+        }
     }

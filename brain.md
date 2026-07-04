@@ -6,6 +6,8 @@
 **Hackathon details:** IDBI Bank National Hackathon 2026, Track 3: AI-Powered MSME Financial Health Card.
 **Submission Date:** July 8.
 
+**Frontend visual design source of truth:** [DESIGN_SYSTEM.md](file:///c:/hackathon-projects/naadi/frontend/DESIGN_SYSTEM.md) — always read before any UI work.
+
 ## 2. Tech Stack
 * **Frontend**: React (Vite) + TailwindCSS + Framer Motion
 * **Charts**: Recharts
@@ -24,17 +26,23 @@ naadi/
 ```
 
 ## 4. Current Status
-* **What's built and working so far**: **Day 1 and Day 2 are COMPLETE.** We initialized the FastAPI backend, set up a CORS middleware supporting wide-open origins for browser sandbox compatibility, and scaffolded the Vite/React frontend. We trained a high-performing XGBoost model (91.67% accuracy, 0.86 F1 score) to classify MSME credit readiness, and built a custom SHAP explainability pipeline. Additionally, we developed a stateful days-calibration engine that computes "days remaining" until ready and ranks the top 3 corrective actions. These are fully exposed via stateful `/msme/{id}/score` and `/msme/{id}/action-complete` API routes that persist state directly to the CSV dataset.
-* **What's in progress right now**: Day 2 complete. Ready for Day 3.
+* **What's built and working so far**: **Days 1-4 are COMPLETE.** 
+  * **Backend**: FastAPI API services, SQLite DB interface, custom XGBoost classifier model (91.67% accuracy), SHAP explainability pipeline, days-to-ready calibration engine.
+  * **Frontend**: React client with MongoDB Sprout Green design system. `StyleGuide` token catalog, `Onboarding` flow, `CountdownDial` (Leaf Growth Ring dial), `ActionCard` interactive list, and `ScoreBreakdown` (Financial Health Insights).
+  * **Data Flow Architecture**:
+    * `Onboarding.jsx` calls `POST /msme/connect` on submit (validates ID and connection sources).
+    * `Dashboard.jsx` calls `GET /msme/{msme_id}/score` on page load to fetch the initial countdown, probability, top 3 actions, and SHAP explanations.
+    * `Dashboard.jsx` calls `POST /msme/{msme_id}/action-complete` when an action is clicked (sends `{ action_id }` and receives updated countdown parameters). Subsequently triggers a background `GET /msme/{msme_id}/score` refresh to update the insights panel.
+* **What's in progress right now**: Day 4 complete. Ready for Day 5.
 * **What's broken or blocked**: Nothing.
-* **Last updated**: 2026-07-04 (Antigravity Agent)
+* **Last updated**: 2026-07-05 (Antigravity Agent)
 
 ## 5. Day-by-Day Roadmap
 * [x] **Day 1**: Phase 0 Setup (Backend/Frontend initialization) and Phase 1 Synthetic Data Generation.
 * [x] **Day 2**: Phase 2 Finish Model + Backend API (train the XGBoost model, add SHAP explainability, build the days-calibration logic, and expose it all through /score and /action-complete endpoints).
-* [ ] **Day 3**: Phase 3 Build the frontend UI — Onboarding screen, Dashboard, and the Countdown Dial animation — initially built as a Claude.ai artifact with mock data, to be wired to the real backend afterward.
-* [ ] **Day 4**: Phase 4 Frontend Integration and Routing.
-* [ ] **Day 5**: Phase 5 Integration Testing (End-to-End flow).
+* [x] **Day 3**: Phase 3 Build the frontend UI — Onboarding screen, Dashboard, and the Countdown Dial animation — with design system (DESIGN_SYSTEM.md), StyleGuide, CountdownDial, ActionCard, ScoreBreakdown components.
+* [x] **Day 4**: Phase 4 Frontend Integration — Dashboard wired to real backend (no mock data), action-complete POST round-trips, SHAP breakdown panel added, full E2E verified with both sample MSMEs.
+* [ ] **Day 5**: Phase 5 Testing + demo prep — prepare 2 fixed demo MSME profiles, write the demo script, fix any remaining bugs, rehearse.
 * [ ] **Day 6**: Phase 6 Polish & Demo Script, Rehearsal, and final Submission.
 
 ## 6. Decisions & Reasoning Log
@@ -43,18 +51,31 @@ naadi/
 * **SQLite over Postgres**: Selected for zero-setup simplicity given the hackathon time constraints.
 * **Jupyter Notebooks Abandoned**: We abandoned Jupyter notebooks (.ipynb files) in favor of plain .py scripts due to file corruption issues. All exploration and training scripts run natively via terminal.
 * **Wide-open CORS Policy**: Enabled `CORSMiddleware` with `allow_origins=["*"]` and `allow_credentials=False` to support browser sandbox connections, ensuring that frontend client pages running inside Claude.ai artifacts can query the local server.
+* **Visual Identity Shift to Light-Mode Sprout Theme**: Redesigned the visual system to a light-mode layout inspired by MongoDB's visual guidelines. Discarded the sunset dawn theme and the previous dark mode in favor of a clean, crisp off-white (`#F7F9F8`) and pure white (`#FFFFFF`) surface set, with deep forest-charcoal text (`#0E1714`) for technical trust, and a green progress theme. The countdown dial is now a circular Leaf Growth Ring transitioning from sprout green (`#D1FAE5`) to vivid MongoDB forest green (`#00684A`), reflecting a business growing towards credit-readiness.
+* **Self-Managed Page Loads**: Encapsulated loading, fetching, and error handling states directly inside the [Dashboard.jsx](file:///c:/hackathon-projects/naadi/frontend/src/pages/Dashboard.jsx) component to maximize modularity and simplify routing in `App.jsx`.
+* **Operational Threshold Grouping in ScoreBreakdown**: Replaced raw mathematical SHAP sign classification with operational health thresholds. This prevents the logical UX anomaly where mediocre metrics (e.g. 4 late payments) appear under "Working For You" just because the SHAP sign was positive relative to the dataset average.
+* **SVG Icons over Emojis**: Replaced text emojis with custom styled SVG vector assets for checkmark and warning states in [ScoreBreakdown.jsx](file:///c:/hackathon-projects/naadi/frontend/src/components/ScoreBreakdown.jsx) to elevate visual finish.
 
 ## 7. Known Issues / Things To Watch
 * The countdown dial animation is the "wow moment". Do not prioritize it.
 * Avoid AWS deployments unless all core functionality is fully completed with time to spare; live demos can be done locally or via ngrok to reduce risk.
 * No `.ipynb` files should be used anywhere in this project going forward. Use plain Python scripts for ML/data tasks.
 * The days-calibration formula is an unvalidated mathematical heuristic and is not based on historical lender approval records.
+* The synthetic generator does not use a fixed seed; full dataset regeneration will alter the UUIDs of the Scenario A and B MSMEs. Restore the CSV dataset via `git checkout` to retain fixed test profiles.
 
 ## 8. How To Resume Work
-* **Next Task**: Phase 3 - Build the frontend UI (Onboarding, Dashboard, and Countdown Dial animation) as a Claude.ai artifact, then integrate.
-* **Backend Run**: `cd backend; .\venv\Scripts\Activate.ps1; uvicorn app.main:app --reload`
-* **Frontend Run**: `cd frontend; npm run dev`
+* **Start Backend Server**:
+  ```powershell
+  cd backend
+  .\venv\Scripts\Activate.ps1
+  python -m uvicorn app.main:app --reload
+  ```
+* **Start Frontend Dev Server**:
+  ```powershell
+  cd frontend
+  npm run dev
+  ```
 * **Test MSME IDs**:
-  * Weak MSME: `967b0eeb` (Starts at 180 days remaining, probability: 0.0021)
-  * Closer MSME: `8cdd3d24` (Starts at 18 days remaining, probability: 0.7023)
+  * Weak MSME (Scenario A): `967b0eeb` (Starts at 180 days remaining, probability: 0.0021)
+  * Closer MSME (Scenario B): `8cdd3d24` (Starts at 18 days remaining, probability: 0.7023)
 
