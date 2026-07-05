@@ -21,16 +21,16 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
   let stageName = "Seedling";
   let stageColor = "text-sky-grey";
   let ringColor = "url(#growthGrad)";
-  let haloGlow = "rgba(209, 250, 229, 0.15)"; // Soft pale sprout glow (#D1FAE5)
+  let haloGlow = "rgba(184, 232, 200, 0.15)"; // Soft pale sprout glow (#B8E8C8)
   
   if (activeProbability >= 0.75) {
     stageName = "Blooming";
     stageColor = "text-sky-gold";
-    haloGlow = "rgba(0, 104, 74, 0.08)"; // Deep forest green glow (#00684A)
+    haloGlow = "rgba(0, 214, 107, 0.08)"; // Deep forest green glow (#00D66B)
   } else if (activeProbability >= 0.35) {
     stageName = "Sprouting";
-    stageColor = "text-sky-amethyst";
-    haloGlow = "rgba(0, 237, 100, 0.06)"; // Spring green glow (#00ED64)
+    stageColor = "text-sky-gold";
+    haloGlow = "rgba(0, 214, 107, 0.06)"; // Spring green glow (#00D66B)
   }
 
   // Smooth numeric counter animation state
@@ -53,7 +53,7 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
   }, [safeDaysRemaining]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-sky-card rounded-2xl border border-sky-midnight shadow-[0_8px_30px_rgba(0,104,74,0.02)] relative overflow-hidden h-[330px] w-full">
+    <div className="flex flex-col items-center justify-center p-6 bg-sky-card rounded-2xl border border-sky-midnight shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden h-[330px] w-full z-10">
       
       {/* Soft circular halo glow representing growth vitality */}
       <div 
@@ -70,17 +70,16 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
           className="w-full h-full overflow-visible -rotate-90"
         >
           <defs>
-            {/* Gradient that transitions from Sprout Green (#D1FAE5) to Spring Green (#00ED64) to Forest Green (#00684A) */}
+            {/* Gradient that transitions from Sprout Green (#B8E8C8) to Primary Green (#00D66B) */}
             <linearGradient id="growthGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#D1FAE5" /> {/* Pale Sprout */}
-              <stop offset="50%" stopColor="#00ED64" /> {/* Spring Green */}
-              <stop offset="100%" stopColor="#00684A" /> {/* Deep Forest */}
+              <stop offset="0%" stopColor="#B8E8C8" /> {/* Sprout Green */}
+              <stop offset="100%" stopColor="#00D66B" /> {/* Primary Green */}
             </linearGradient>
           </defs>
 
           {/* Concentric Tree Growth Rings (Abstract Background) */}
-          <circle cx="80" cy="80" r="50" fill="none" stroke="#E2E8E5" strokeWidth="0.5" opacity="0.3" />
-          <circle cx="80" cy="80" r="60" fill="none" stroke="#E2E8E5" strokeWidth="0.5" opacity="0.3" />
+          <circle cx="80" cy="80" r="50" fill="none" stroke="#E3E1DE" strokeWidth="0.5" opacity="0.3" />
+          <circle cx="80" cy="80" r="60" fill="none" stroke="#E3E1DE" strokeWidth="0.5" opacity="0.3" />
 
           {/* Background Track Arc */}
           <circle
@@ -88,7 +87,7 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
             cy="80"
             r={radius}
             fill="none"
-            stroke="#E2E8E5"
+            stroke="#E3E1DE"
             strokeWidth="6"
           />
 
@@ -119,10 +118,12 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
             >
               {displayCount}
             </motion.span>
-            <span className="text-sm font-display text-sky-grey ml-0.5 font-bold tracking-wider uppercase">d</span>
+            {safeDaysRemaining > 0 && (
+              <span className="text-sm font-display text-sky-grey ml-0.5 font-bold tracking-wider uppercase">d</span>
+            )}
           </div>
           <span className="text-[9px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-1">
-            until ready
+            {safeDaysRemaining <= 0 ? "You're Loan-Ready!" : "until ready"}
           </span>
         </div>
       </div>

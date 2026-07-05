@@ -25,11 +25,12 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
+      whileHover={!isCompleted && !isCompleting ? { y: -4, scale: 1.02, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
       transition={{ duration: 0.3 }}
-      className={`p-5 border rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 relative overflow-hidden ${
+      className={`p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 relative overflow-hidden ${
         isCompleted
-          ? "bg-sky-dark/50 border-sky-midnight opacity-65"
-          : "bg-sky-card border-sky-midnight hover:border-sky-gold/40 hover:shadow-[0_8px_30px_rgba(0,104,74,0.03)]"
+          ? "bg-sky-sunset/10 border border-sky-midnight opacity-65"
+          : "bg-sky-card border border-sky-midnight shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
       }`}
     >
       {/* Decorative vertical line representing MongoDB growth leaf vein */}
@@ -49,7 +50,7 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
       <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end border-t border-sky-midnight md:border-none pt-3 md:pt-0">
         <div className="flex flex-col items-center md:items-end">
           <span className={`text-2xl font-display font-bold leading-none ${isCompleted ? 'text-sky-grey' : 'text-sky-gold'}`}>
-            +{daysSaved}
+            -{daysSaved}
           </span>
           <span className="text-[8px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">
             days saved
@@ -59,12 +60,12 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
         <button
           onClick={handleComplete}
           disabled={isCompleting || isCompleted}
-          className={`px-5 py-2.5 rounded-full font-display text-[9px] font-extrabold tracking-widest uppercase transition-all duration-300 ${
+          className={`px-5 py-2.5 rounded-xl font-display text-[9px] font-extrabold tracking-widest uppercase transition-all duration-300 ${
             isCompleted
-              ? "bg-sky-sunset text-sky-gold border border-sky-gold/15 cursor-not-allowed"
+              ? "bg-sky-sunset/30 text-sky-gold border border-sky-gold/15 cursor-not-allowed"
               : isCompleting
               ? "bg-sky-dark text-sky-grey border border-sky-midnight cursor-not-allowed"
-              : "bg-sky-gold hover:bg-[#00523A] text-white shadow-sm"
+              : "bg-sky-gold hover:bg-[#00b056] text-white shadow-sm hover:shadow-[0_8px_20px_rgba(0,214,107,0.15)]"
           }`}
         >
           {isCompleted ? (

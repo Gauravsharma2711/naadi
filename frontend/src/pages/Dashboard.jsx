@@ -4,6 +4,7 @@ import CountdownDial from "../components/CountdownDial";
 import ActionCard from "../components/ActionCard";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import { getMsmeScore, completeAction } from "../services/api";
+import AmbientBackground from "../components/AmbientBackground";
 
 export default function Dashboard({ msmeId, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -144,19 +145,13 @@ export default function Dashboard({ msmeId, onBack }) {
   const maxDays = 180; // Maximum possible count from calibration heuristic
 
   return (
-    <div className="min-h-screen bg-sky-dark px-4 py-8 relative overflow-hidden font-sans select-none text-sky-cream">
-      
-      {/* Decorative organic green halos */}
-      <div className="absolute w-[450px] h-[450px] rounded-full bg-sky-gold/5 blur-[120px] top-10 right-10 pointer-events-none" />
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-sky-sunset/20 blur-[120px] -bottom-20 left-10 pointer-events-none" />
+    <div className="min-h-screen bg-sky-dark px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+      <AmbientBackground daysRemaining={daysRemaining} />
 
-      {/* Grid overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#E2E8E5_1px,transparent_1px),linear-gradient(to_bottom,#E2E8E5_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-25 pointer-events-none" />
-
-      <div className="w-full max-w-2xl mx-auto relative z-10 space-y-6">
+      <div className="w-full max-w-6xl mx-auto relative z-10 space-y-6">
         
         {/* Navigation & Header */}
-        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_8px_30px_rgba(0,104,74,0.02)]">
+        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
@@ -186,85 +181,107 @@ export default function Dashboard({ msmeId, onBack }) {
           </div>
         </header>
 
-        {/* Hero Section: Countdown Dial Centered */}
-        <main className="w-full flex justify-center">
-          <div className="w-full max-w-md">
+        {/* Main Body Columns: Two-Column split on Desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+          
+          {/* Left Column: Growth-Ring Dial (~60% width) */}
+          <main className="md:col-span-3 flex justify-center w-full">
             <CountdownDial 
               daysRemaining={daysRemaining} 
               maxDays={maxDays} 
               probability={probability} 
             />
-          </div>
-        </main>
+          </main>
 
-        {/* Action Board Section */}
-        <section className="bg-sky-card border border-sky-midnight p-6 rounded-xl shadow-[0_8px_30px_rgba(0,104,74,0.02)] space-y-6">
-          <div className="border-b border-sky-midnight pb-4 flex justify-between items-baseline">
-            <h3 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-cream">
-              Action Board
-            </h3>
-            <span className="text-[9px] font-display text-sky-grey font-bold uppercase tracking-widest">
-              {actions.length} action{actions.length !== 1 ? "s" : ""} remaining
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-              {daysRemaining <= 0 ? (
-                /* Credit-Ready State Banner */
-                <motion.div
-                  key="ready-banner"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-8 bg-sky-sunset/60 border border-sky-gold/20 rounded-xl text-center space-y-3 relative overflow-hidden"
-                >
-                  <div className="absolute w-[200px] h-[200px] rounded-full bg-sky-gold/5 blur-[50px] -bottom-10 left-1/2 -translate-x-1/2 pointer-events-none" />
-                  
-                  <span className="text-3xl">🌱</span>
-                  <h4 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-gold">
-                    Your Business is Credit-Ready!
-                  </h4>
-                  <p className="text-xs font-sans text-sky-cream/80 max-w-lg mx-auto leading-relaxed">
-                    All compliance parameters meet the recommended underwriting limits. You can confidently apply for standard MSME business funding.
+          {/* Right Column: Actions Stack or Success Offer Card (~40% width) */}
+          <section className="md:col-span-2 space-y-4 w-full">
+            {daysRemaining <= 0 ? (
+              /* Success Pre-Approved Offer Card */
+              <motion.div
+                key="success-offer"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="p-6 bg-sky-card border border-sky-midnight rounded-2xl shadow-[0_8px_20px_rgba(0,214,107,0.06)] hover:shadow-[0_8px_20px_rgba(0,214,107,0.12)] space-y-6 relative overflow-hidden transition-all duration-300"
+              >
+                {/* Visual success top bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-sky-gold" />
+                
+                <div>
+                  <span className="text-2xl">🌱</span>
+                  <h3 className="text-lg font-display uppercase tracking-wider font-extrabold text-sky-cream mt-2">
+                    Pre-Approved Loan Offer
+                  </h3>
+                  <p className="text-xs font-sans text-sky-grey mt-2 leading-relaxed">
+                    Your business has met all eligibility benchmarks. You are pre-approved for immediate disbursement.
                   </p>
-                </motion.div>
-              ) : actions.length === 0 ? (
-                /* No actions from model but still days remaining (edge case) */
-                <motion.div
-                  key="no-actions"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="p-6 bg-sky-dark border border-sky-midnight rounded-xl text-center"
-                >
-                  <p className="text-xs font-sans text-sky-grey">
-                    No specific actions identified. Continue maintaining your current financial discipline.
-                  </p>
-                </motion.div>
-              ) : (
-                /* Real Action Cards from Backend */
-                actions.map((item) => (
-                  <ActionCard
-                    key={item.action_id}
-                    featureId={item.action_id}
-                    action={item.action}
-                    daysSaved={item.days_saved}
-                    reason={
-                      shapBreakdown.find(s => s.feature === item.action_id)?.reason || ""
-                    }
-                    onComplete={handleActionComplete}
-                    isCompleted={completedActions.has(item.action_id)}
-                  />
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
+                </div>
 
-        {/* SHAP Breakdown Panel */}
+                <div className="border-t border-b border-sky-midnight py-4 my-2 flex justify-between items-center">
+                  <div>
+                    <span className="text-2xl font-display font-extrabold text-sky-cream">₹10,00,000</span>
+                    <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Approved Limit</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-display font-extrabold text-sky-gold">11.5%</span>
+                    <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Annual APR</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => alert("Application submitted successfully! Your funds are being disbursed.")}
+                  className="w-full py-3.5 bg-sky-gold hover:bg-[#00b056] text-white rounded-xl font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_8px_20px_rgba(0,214,107,0.15)] hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,214,107,0.22)]"
+                >
+                  Apply Now
+                </button>
+              </motion.div>
+            ) : (
+              /* Action Cards Stack */
+              <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
+                <div className="border-b border-sky-midnight pb-3 flex justify-between items-baseline">
+                  <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-cream">
+                    Accelerate Growth
+                  </h3>
+                  <span className="text-[9px] font-display text-sky-grey font-bold uppercase tracking-widest">
+                    {actions.length} action{actions.length !== 1 ? "s" : ""} left
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {actions.length === 0 ? (
+                      <p className="text-xs font-sans text-sky-grey text-center py-4">
+                        No actions remaining. Keep maintaining credit hygiene.
+                      </p>
+                    ) : (
+                      actions.map((item) => (
+                        <ActionCard
+                          key={item.action_id}
+                          featureId={item.action_id}
+                          action={item.action}
+                          daysSaved={item.days_saved}
+                          reason={
+                            shapBreakdown.find(s => s.feature === item.action_id)?.reason || ""
+                          }
+                          onComplete={handleActionComplete}
+                          isCompleted={completedActions.has(item.action_id)}
+                        />
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
+          </section>
+
+        </div>
+
+        {/* Quiet Bottom SHAP Breakdown Section */}
         {shapBreakdown.length > 0 && (
           <ScoreBreakdown 
             shapBreakdown={shapBreakdown} 
-            msmeData={msmeData} 
+            msmeData={msmeData}
+            daysRemaining={daysRemaining}
           />
         )}
 

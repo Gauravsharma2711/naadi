@@ -1,57 +1,83 @@
-# Din Design System: Token Catalog & Visual Specification
-
-**THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR ALL VISUAL DESIGN. Before creating or editing ANY UI component, read this file first. Never invent new colors, fonts, spacing values, or component styles that aren't defined here. If a new need arises, ADD it to this file first, then use it — never improvise inline.**
-
----
-
-## 1. Color Palette (Light Sprout Green Theme)
-
-All colors are mapped semantically inside `tailwind.config.js` under the `sky` key:
-
-| Tailwind Class | Hex Value | Name / Purpose |
-| :--- | :--- | :--- |
-| `bg-sky-dark` | `#F7F9F8` | **Off-White Canvas**: Main page body background. |
-| `bg-sky-card` | `#FFFFFF` | **Pure White**: Primary container card and module backgrounds. |
-| `border-sky-midnight` | `#E2E8E5` | **Sage Divider**: Thin grid overlay lines, input borders, and card outlines. |
-| `text-sky-cream` | `#0E1714` | **Charcoal Forest**: High-contrast primary text, main titles, and headers. |
-| `text-sky-grey` | `#62756E` | **Muted Sage**: Secondary paragraphs, captions, and helper labels. |
-| `text-sky-gold` / `bg-sky-gold` | `#00684A` | **Vivid Forest Green**: Primary brand actions, buttons, and fully ready indicators. |
-| `text-sky-sunset` / `bg-sky-sunset` | `#D1FAE5` | **Pale Sprout Green**: Initial sprout rings, low progress tracks, and mild warnings. |
-| `text-sky-amethyst` / `bg-sky-amethyst` | `#00ED64` | **Spring Green Flare**: Active pulses, success badges, and optimized indicators. |
-| `text-sky-crimson` / `bg-sky-crimson` | `#F26157` | **Alert Red**: Warnings, late filings, and needs-attention badges. |
+# Din — Design System (MongoDB-Inspired)
+### For use with Google Stitch, and as the source of truth for the coded frontend
 
 ---
 
-## 2. Typography
+## 1. Design Philosophy
 
-*   **Display & Headings**: `Space Grotesk` (Google Font)
-    *   *Usage*: Page titles, dashboard widgets, countdown values, and primary badges.
-    *   *Styling*: Uppercase, semibold/extrabold, with tracking `tracking-widest` or `tracking-wider` to build technical trust.
-*   **Body & Form Inputs**: `Plus Jakarta Sans` (Google Font)
-    *   *Usage*: Explanatory text, secondary reasons, descriptive captions, and form inputs.
-    *   *Styling*: Regular/Medium weights with standard tight leading.
+Din is a countdown to loan-readiness for Indian MSMEs, not a static credit score. The visual language borrows MongoDB's confident, technical-trust aesthetic — clean geometric type, a single strong green accent, generous white space, soft rounded surfaces — and adapts it to Din's own metaphor: **a business growing toward readiness**, expressed as a growth-ring dial that fills in as days count down.
+
+Animation should feel *organic and confident*, never bouncy or playful — think of something growing steadily, not a game UI celebrating.
 
 ---
 
-## 3. Border-Radius, Shadows & Spacing Rules
+## 2. Color Palette
 
-*   **Border-Radius**:
-    *   `rounded-xl` ($12\text{px}$): Primary container cards and widgets.
-    *   `rounded-2xl` ($16\text{px}$): Onboarding panels.
-    *   `rounded-full`: Buttons, status badges, input fields, and progression tracks.
-*   **Shadows**:
-    *   `shadow-[0_8px_30px_rgba(0,104,74,0.02)]` (and `0.03` variation): Custom organic shadow with a soft green tint, providing depth without harsh borderlines.
-*   **Spacing Rhythm**:
-    *   Page Margin: `p-8` ($32\text{px}$)
-    *   Card Padding: `p-6` ($24\text{px}$)
-    *   Elements Gaps: `gap-4` ($16\text{px}$) or `gap-2` ($8\text{px}$)
+| Name | Hex | Usage |
+|---|---|---|
+| Background | `#FBFBFA` | Page background, off-white |
+| Surface | `#FFFFFF` | Cards, elevated panels |
+| Primary Green | `#00D66B` | Primary accent, CTAs, filled dial, success states |
+| Sprout Green (muted) | `#B8E8C8` | Unfilled dial track, secondary/disabled accents |
+| Deep Text | `#001E2B` | Headings, primary text (not pure black) |
+| Muted Text | `#5A6B70` | Secondary text, captions, "Why This Score" section |
+| Border/Divider | `#E3E1DE` | Subtle borders, dividers |
+| Error/Alert | `#D64545` | Error states only, used sparingly |
+
+**Gradient (used only on the growth-ring dial):** `#B8E8C8` → `#00D66B`, applied along the fill arc as it progresses from low to high readiness.
 
 ---
 
-## 4. Countdown Dial: Leaf Growth Ring
+## 3. Typography
 
-The Countdown Dial is the single signature visual element representing a sprout growing into a full leaf:
-*   **Visual Structure**: A full circular gauge containing concentric tree rings (`stroke="#E2E8E5"`, `opacity="0.3"`) in the background.
-*   **Dynamic Progress**: Visually grows clockwise proportional to readiness. Starts as a thin, pale sprout green (`#D1FAE5`) track and morphs into a thick, solid forest green (`#00684A`) outline.
-*   **Central Content**: Big bold countdown value rendered in charcoal `Space Grotesk` font with the "until ready" label centered below.
-*   **Growth Badges**: Shows the status dynamically as the ring expands (Seedling $\rightarrow$ Sprouting $\rightarrow$ Blooming).
+| Role | Font | Weight | Notes |
+|---|---|---|---|
+| Display/Numbers (the countdown) | **Space Grotesk** | 700 | Used ONLY for the big day-count number and page hero headlines |
+| Headings | **Space Grotesk** | 600 | Section titles |
+| Body/UI text | **Inter** | 400–500 | Everything else — labels, buttons, descriptions |
+
+Type scale: Hero number `96px` / Headings `28px` / Subheadings `18px` / Body `15px` / Caption `13px`.
+
+---
+
+## 4. Shape & Elevation
+
+- Border-radius: **16px** on cards, **12px** on buttons, **full circle** on the dial and icon containers.
+- Shadows: soft only — `0 4px 12px rgba(0,0,0,0.06)` on resting cards, `0 8px 20px rgba(0,214,107,0.15)` (a soft green-tinted glow) on the primary CTA button on hover.
+- No hard borders except the 1px `#E3E1DE` divider where absolutely needed.
+
+---
+
+## 5. Animation Guidelines (this is the section Stitch prompts need to reflect)
+
+Animations should feel **smooth, physical, and organic** — like something growing — never bouncy, elastic, or game-like.
+
+| Element | Animation | Timing/Easing |
+|---|---|---|
+| Growth-ring dial fill | Arc fills smoothly from current value to new value | 900ms, ease-out cubic |
+| Dial color | Shifts along the sprout→primary green gradient as it fills | Synced with the fill animation |
+| Number count-up/down | Digits roll/count between old and new value, not an instant jump | 600ms, ease-in-out |
+| Action card on tap | Checkmark fades/scales in, card background tints faintly green | 300ms, ease-out |
+| Page transitions | Gentle fade + slight upward slide (12px) on new content entering | 400ms, ease-out |
+| Buttons on hover | Soft green glow shadow appears, slight scale (1.02x) | 200ms |
+| Loading states | A slow pulsing of the dial's muted green track (not a generic spinner) | 1.5s loop, ease-in-out |
+
+**Rule for any coding agent implementing this later:** use Framer Motion, and always animate *from the real previous value to the real new value* — never fake a random animation disconnected from the actual data.
+
+---
+
+## 6. Component Patterns
+
+- **Growth-Ring Dial:** circular arc (not a full plain ring — leave a small organic gap, like a sprout shape), large number centered, label below in Muted Text.
+- **Action Card:** white surface, 16px radius, soft shadow, icon/checkbox left, title + day-impact right, tap triggers the tap animation above.
+- **Primary Button:** filled Primary Green, white Inter text, 12px radius, hover glow per above.
+- **Secondary/Ghost Button:** transparent background, Primary Green text and 1px border.
+- **"Why This Score" list:** no card/border — just Muted Text rows with a small dot separator, deliberately quieter than everything else on the page.
+
+---
+
+## 7. Non-Negotiables
+
+1. The growth-ring dial is the ONE hero element on every screen it appears — nothing else should visually compete with it.
+2. Never introduce a new color, font, or spacing value outside this document without updating this document first.
+3. Animations always reflect real, current data — never decorative-only motion disconnected from state.

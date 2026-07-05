@@ -9,19 +9,19 @@ export default {
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],
         outfit: ['"Space Grotesk"', 'sans-serif'], // Alias for backward compatibility
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
       },
       colors: {
         sky: {
-          dark: '#F7F9F8',      // Clean off-white background
+          dark: '#FBFBFA',      // Clean off-white background
           card: '#FFFFFF',      // Crisp white cards
-          midnight: '#E2E8E5',  // Thin sage-grey dividers and borders
-          gold: '#00684A',      // Vivid Forest Green (MongoDB brand primary)
-          sunset: '#D1FAE5',    // Pale Sprout Green (low readiness)
-          amethyst: '#00ED64',  // Vivid Spring Green (success/growth flare)
-          crimson: '#F26157',   // Alert/Error Red
-          cream: '#0E1714',     // Primary charcoal text
-          grey: '#62756E'       // Muted Sage text
+          midnight: '#E3E1DE',  // Thin border/divider
+          gold: '#00D66B',      // Vivid Primary Green (MongoDB brand primary)
+          sunset: '#B8E8C8',    // Muted Sprout Green
+          amethyst: '#00D66B',  // Vivid Primary Green (success/growth flare)
+          crimson: '#D64545',   // Alert/Error Red
+          cream: '#001E2B',     // Deep text
+          grey: '#5A6B70'       // Muted text
         }
       }
     },

@@ -299,3 +299,5 @@ c4a884b1,good,declining,high,True,0.833,-0.048,0.322,0.745,0.5,0
 2fcac648,average,growing,low,False,0.75,0.044,0.061,0.216,0.5,1
 037e305e,poor,growing,high,False,0.167,0.025,0.369,0.844,0.5,0
 c76c593d,poor,flat,high,False,0.083,-0.012,0.47,0.617,0.5,0
+demo-msme-a,average,declining,high,True,1.0,0.05,0.05,0.712,0.667,0
+demo-msme-b,good,growing,low,False,1.0,0.05,0.05,0.2,0.5,1
