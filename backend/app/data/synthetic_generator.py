@@ -101,6 +101,34 @@ def generate_dataset(num_profiles=300):
             "credit_ready": credit_ready
         })
         
+    # Append the two permanent demo profiles to ensure they are always present
+    records.append({
+        "msme_id": "demo-msme-a",
+        "discipline_level": "average",
+        "pattern": "declining",
+        "volatility_level": "high",
+        "has_employees": True,
+        "filing_on_time_rate": 0.583,
+        "upi_trend_slope": -0.039,
+        "cashflow_volatility_score": 0.282,
+        "top_buyer_concentration_pct": 0.712,
+        "payroll_consistency_score": 0.667,
+        "credit_ready": 0
+    })
+    records.append({
+        "msme_id": "demo-msme-b",
+        "discipline_level": "good",
+        "pattern": "growing",
+        "volatility_level": "low",
+        "has_employees": False,
+        "filing_on_time_rate": 1.0,
+        "upi_trend_slope": 0.05,
+        "cashflow_volatility_score": 0.05,
+        "top_buyer_concentration_pct": 0.20,
+        "payroll_consistency_score": 0.5,
+        "credit_ready": 1
+    })
+        
     df = pd.DataFrame(records)
     
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))

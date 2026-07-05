@@ -26,7 +26,7 @@ def get_msme_score(msme_id: str):
     }
     
     # 2. Run calibration pipeline
-    calibration = calculate_days_to_ready(features)
+    calibration = calculate_days_to_ready(features, msme_id=msme_id)
     
     # 3. Format the top 3 actionable recommendations
     top_3_actions = [
@@ -39,7 +39,7 @@ def get_msme_score(msme_id: str):
     ]
     
     # 4. Get the complete SHAP breakdown (both positive and negative drivers)
-    shap_raw = explain_prediction(features, filter_negative=False)
+    shap_raw = explain_prediction(features, filter_negative=False, msme_id=msme_id)
     shap_breakdown = [
         {
             "feature": item["feature"],

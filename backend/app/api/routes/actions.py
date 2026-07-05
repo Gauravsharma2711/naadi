@@ -53,7 +53,7 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest):
     }
     
     # 4. Re-calculate scoring and calibration
-    calibration = calculate_days_to_ready(features)
+    calibration = calculate_days_to_ready(features, msme_id=msme_id)
     
     top_3_actions = [
         {

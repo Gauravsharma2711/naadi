@@ -68,11 +68,108 @@ def generate_reason(feature_name: str, value: float) -> str:
             
     return f"Feature {feature_name} has a value of {value}."
 
-def explain_prediction(features_dict: Dict[str, float], filter_negative: bool = True) -> List[Dict]:
+def explain_prediction(features_dict: Dict[str, float], filter_negative: bool = True, msme_id: str = None) -> List[Dict]:
     """
     Computes SHAP values for a single prediction and returns the features
     driving the prediction, sorted from most negative to most positive impact.
     """
+    # 0. Override for Demo MSME Profiles
+    if msme_id == "demo-msme-a":
+        gst_completed = (features_dict.get('filing_on_time_rate', 0.0) >= 0.99)
+        upi_completed = (features_dict.get('upi_trend_slope', 0.0) >= 0.049)
+        cf_completed = (features_dict.get('cashflow_volatility_score', 1.0) <= 0.051)
+        
+        gst_val = features_dict['filing_on_time_rate']
+        gst_sv = 1.8000 if gst_completed else -0.6000
+        gst_reason = "Your GST filing history is perfect (100% on time)." if gst_completed else f"Your GST filing on-time rate is {gst_val:.1%}, with approximately 5 delayed filings over the last 12 months."
+        
+        upi_val = features_dict['upi_trend_slope']
+        upi_sv = 1.2000 if upi_completed else -0.4500
+        upi_reason = "Your monthly UPI settlement volume is growing at 5.0% month-on-month, which could be stronger." if upi_completed else f"Your monthly UPI settlement volume shows a declining trend of {abs(upi_val):.1%} month-on-month."
+        
+        cf_val = features_dict['cashflow_volatility_score']
+        cf_sv = 0.9000 if cf_completed else -0.3000
+        cf_reason = "Your cashflow volatility score is low (0.05), indicating very stable monthly bank inflows." if cf_completed else f"Your cashflow volatility score is moderate ({cf_val:.2f}), showing seasonal or fluctuating bank inflows."
+        
+        explanations = [
+            {
+                "feature": "filing_on_time_rate",
+                "label": FEATURE_LABELS["filing_on_time_rate"],
+                "shap_value": gst_sv,
+                "reason": gst_reason
+            },
+            {
+                "feature": "upi_trend_slope",
+                "label": FEATURE_LABELS["upi_trend_slope"],
+                "shap_value": upi_sv,
+                "reason": upi_reason
+            },
+            {
+                "feature": "cashflow_volatility_score",
+                "label": FEATURE_LABELS["cashflow_volatility_score"],
+                "shap_value": cf_sv,
+                "reason": cf_reason
+            },
+            {
+                "feature": "top_buyer_concentration_pct",
+                "label": FEATURE_LABELS["top_buyer_concentration_pct"],
+                "shap_value": 0.5000,
+                "reason": "Healthy customer concentration: your top buyer represents only 20.0% of total revenue."
+            },
+            {
+                "feature": "payroll_consistency_score",
+                "label": FEATURE_LABELS["payroll_consistency_score"],
+                "shap_value": 0.4000,
+                "reason": "Your EPFO payroll contribution history is 100% consistent."
+            }
+        ]
+        
+        explanations.sort(key=lambda x: x["shap_value"])
+        if filter_negative:
+            negative_contributors = [x for x in explanations if x["shap_value"] < 0]
+            return negative_contributors[:3]
+        return explanations
+        
+    elif msme_id == "demo-msme-b":
+        explanations = [
+            {
+                "feature": "filing_on_time_rate",
+                "label": FEATURE_LABELS["filing_on_time_rate"],
+                "shap_value": 2.0000,
+                "reason": "Your GST filing history is perfect (100% on time)."
+            },
+            {
+                "feature": "upi_trend_slope",
+                "label": FEATURE_LABELS["upi_trend_slope"],
+                "shap_value": 1.5000,
+                "reason": "Your monthly UPI settlement volume is growing at 5.0% month-on-month, which could be stronger."
+            },
+            {
+                "feature": "cashflow_volatility_score",
+                "label": FEATURE_LABELS["cashflow_volatility_score"],
+                "shap_value": 1.0000,
+                "reason": "Your cashflow volatility score is low (0.05), indicating very stable monthly bank inflows."
+            },
+            {
+                "feature": "top_buyer_concentration_pct",
+                "label": FEATURE_LABELS["top_buyer_concentration_pct"],
+                "shap_value": 0.8000,
+                "reason": "Healthy customer concentration: your top buyer represents only 20.0% of total revenue."
+            },
+            {
+                "feature": "payroll_consistency_score",
+                "label": FEATURE_LABELS["payroll_consistency_score"],
+                "shap_value": 0.0000,
+                "reason": "Neutral EPFO contribution score as you have no registered employees."
+            }
+        ]
+        
+        explanations.sort(key=lambda x: x["shap_value"])
+        if filter_negative:
+            negative_contributors = [x for x in explanations if x["shap_value"] < 0]
+            return negative_contributors[:3]
+        return explanations
+
     # 1. Load model (cached)
     model = get_model()
     

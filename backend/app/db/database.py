@@ -35,6 +35,36 @@ def load_db() -> Dict[str, Dict]:
             
             _msme_db[msme_id] = row_dict
             
+        # Ensure permanent demo profiles are always present in the database cache
+        if "demo-msme-a" not in _msme_db:
+            _msme_db["demo-msme-a"] = {
+                "msme_id": "demo-msme-a",
+                "discipline_level": "average",
+                "pattern": "declining",
+                "volatility_level": "high",
+                "has_employees": True,
+                "filing_on_time_rate": 0.583,
+                "upi_trend_slope": -0.039,
+                "cashflow_volatility_score": 0.282,
+                "top_buyer_concentration_pct": 0.712,
+                "payroll_consistency_score": 0.667,
+                "credit_ready": 0
+            }
+        if "demo-msme-b" not in _msme_db:
+            _msme_db["demo-msme-b"] = {
+                "msme_id": "demo-msme-b",
+                "discipline_level": "good",
+                "pattern": "growing",
+                "volatility_level": "low",
+                "has_employees": False,
+                "filing_on_time_rate": 1.0,
+                "upi_trend_slope": 0.05,
+                "cashflow_volatility_score": 0.05,
+                "top_buyer_concentration_pct": 0.20,
+                "payroll_consistency_score": 0.5,
+                "credit_ready": 1
+            }
+            
     return _msme_db
 
 def get_msme(msme_id: str) -> Optional[Dict]:

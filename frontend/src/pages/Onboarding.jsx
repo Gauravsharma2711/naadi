@@ -137,7 +137,7 @@ export default function Onboarding({ onSelectMsme }) {
                       type="text"
                       value={msmeIdInput}
                       onChange={(e) => setMsmeIdInput(e.target.value)}
-                      placeholder="e.g. 967b0eeb"
+                      placeholder="e.g. demo-msme-a"
                       className="flex-1 bg-white border border-sky-midnight rounded-full px-5 py-3 font-display text-sky-cream placeholder-sky-grey/50 focus:outline-none focus:border-sky-gold transition-all duration-300 text-sm shadow-sm"
                     />
                     <button
@@ -163,25 +163,25 @@ export default function Onboarding({ onSelectMsme }) {
               {/* Demo scenarios */}
               <div className="space-y-3">
                 <div
-                  onClick={() => handleDemoSelect("967b0eeb")}
+                  onClick={() => handleDemoSelect("demo-msme-a")}
                   className="p-4 bg-white border border-sky-midnight hover:border-sky-crimson hover:shadow-sm rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
                 >
                   <div>
-                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Scenario A: Slow Start</h4>
-                    <p className="text-xs font-sans text-sky-grey mt-0.5">MSME starting far from ready (~180-day countdown).</p>
+                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo MSME A: 47 Days to Loan-Ready</h4>
+                    <p className="text-xs font-sans text-sky-grey mt-0.5">Starts at 47 days with 3 sensible, explainable actions.</p>
                   </div>
-                  <div className="text-[9px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2.5 py-0.5 rounded-full tracking-wider">Weak</div>
+                  <div className="text-[9px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2.5 py-0.5 rounded-full tracking-wider">Demo A</div>
                 </div>
 
                 <div
-                  onClick={() => handleDemoSelect("8cdd3d24")}
+                  onClick={() => handleDemoSelect("demo-msme-b")}
                   className="p-4 bg-white border border-sky-midnight hover:border-sky-gold hover:shadow-sm rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
                 >
                   <div>
-                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Scenario B: On the Verge</h4>
-                    <p className="text-xs font-sans text-sky-grey mt-0.5">MSME highly stable, close to ready (~18-day countdown).</p>
+                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo MSME B: Pre-Approved (0 Days)</h4>
+                    <p className="text-xs font-sans text-sky-grey mt-0.5">Already pre-approved. Instantly shows the ready success state.</p>
                   </div>
-                  <div className="text-[9px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2.5 py-0.5 rounded-full tracking-wider">Close</div>
+                  <div className="text-[9px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2.5 py-0.5 rounded-full tracking-wider">Demo B</div>
                 </div>
               </div>
 

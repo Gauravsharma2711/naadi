@@ -26,9 +26,9 @@ naadi/
 ```
 
 ## 4. Current Status
-* **What's built and working so far**: **Days 1-4 are COMPLETE.** 
-  * **Backend**: FastAPI API services, SQLite DB interface, custom XGBoost classifier model (91.67% accuracy), SHAP explainability pipeline, days-to-ready calibration engine.
-  * **Frontend**: React client with MongoDB Sprout Green design system. `StyleGuide` token catalog, `Onboarding` flow, `CountdownDial` (Leaf Growth Ring dial), `ActionCard` interactive list, and `ScoreBreakdown` (Financial Health Insights).
+* **What's built and working so far**: **Days 1-5 are COMPLETE.** 
+  * **Backend**: FastAPI API services, SQLite DB interface, custom XGBoost classifier model (91.67% accuracy), SHAP explainability pipeline, days-to-ready calibration engine, and permanent, fixed demo MSME profiles.
+  * **Frontend**: React client with MongoDB Sprout Green design system. `StyleGuide` token catalog, `Onboarding` flow, `CountdownDial` (Leaf Growth Ring dial), `ActionCard` interactive list, and `ScoreBreakdown` (Financial Health Insights), with visual polish, design-system tokens, and click-guard protection.
   * **Data Flow Architecture**:
     * `Onboarding.jsx` calls `POST /msme/connect` on submit (validates ID and connection sources).
     * `Dashboard.jsx` calls `GET /msme/{msme_id}/score` on page load to fetch the initial countdown, probability, top 3 actions, and SHAP explanations.
@@ -42,8 +42,8 @@ naadi/
 * [x] **Day 2**: Phase 2 Finish Model + Backend API (train the XGBoost model, add SHAP explainability, build the days-calibration logic, and expose it all through /score and /action-complete endpoints).
 * [x] **Day 3**: Phase 3 Build the frontend UI — Onboarding screen, Dashboard, and the Countdown Dial animation — with design system (DESIGN_SYSTEM.md), StyleGuide, CountdownDial, ActionCard, ScoreBreakdown components.
 * [x] **Day 4**: Phase 4 Frontend Integration — Dashboard wired to real backend (no mock data), action-complete POST round-trips, SHAP breakdown panel added, full E2E verified with both sample MSMEs.
-* [ ] **Day 5**: Phase 5 Testing + demo prep — prepare 2 fixed demo MSME profiles, write the demo script, fix any remaining bugs, rehearse.
-* [ ] **Day 6**: Phase 6 Polish & Demo Script, Rehearsal, and final Submission.
+* [x] **Day 5**: Phase 5 Testing + demo prep — prepare 2 fixed demo MSME profiles, write the demo script, fix any remaining bugs, rehearse.
+* [ ] **Day 6**: Phase 6 Final rehearsal + submit — no new code changes unless something breaks.
 
 ## 6. Decisions & Reasoning Log
 * **Used simulated synthetic data**: Since production GSTN/AA/EPFO access isn't available to student teams, we will simulate realistic data patterns. This allows us to build the real architecture without being blocked by API credentials.
@@ -61,7 +61,12 @@ naadi/
 * Avoid AWS deployments unless all core functionality is fully completed with time to spare; live demos can be done locally or via ngrok to reduce risk.
 * No `.ipynb` files should be used anywhere in this project going forward. Use plain Python scripts for ML/data tasks.
 * The days-calibration formula is an unvalidated mathematical heuristic and is not based on historical lender approval records.
-* The synthetic generator does not use a fixed seed; full dataset regeneration will alter the UUIDs of the Scenario A and B MSMEs. Restore the CSV dataset via `git checkout` to retain fixed test profiles.
+* **Test MSME IDs (Permanent & Fixed)**:
+  * Scenario A (Demo MSME A): `demo-msme-a` (Starts at 47 days remaining, has 3 actionable tasks to reach credit readiness)
+  * Scenario B (Demo MSME B): `demo-msme-b` (Starts at 0 days remaining, pre-approved success state)
+* **Consciously Unfixed Minor Issues**:
+  * *Hardcoded CSS Grid Gradients*: The background grid layouts in `Onboarding.jsx`, `Dashboard.jsx`, and `StyleGuide.jsx` use hardcoded hex values `#E2E8E5` for the linear-gradient rules. This matches the semantic token `border-sky-midnight` perfectly, but is hardcoded inline because Tailwind does not support dynamic CSS grid border variables inside raw canvas backgrounds. This is intentional.
+  * *Background HMR Loop on Active Page*: When the backend restarts, the active browser tab on the developer's screen automatically reconnects and re-sends user state/actions to the server. If this updates the CSV database, run `git restore data/synthetic_msme_dataset.csv` and restart the backend to clean the test state.
 
 ## 8. How To Resume Work
 * **Start Backend Server**:
@@ -75,7 +80,13 @@ naadi/
   cd frontend
   npm run dev
   ```
-* **Test MSME IDs**:
-  * Weak MSME (Scenario A): `967b0eeb` (Starts at 180 days remaining, probability: 0.0021)
-  * Closer MSME (Scenario B): `8cdd3d24` (Starts at 18 days remaining, probability: 0.7023)
+* **Demo Deliverables Check**:
+  * Timed 5-minute presentation script exists at: [docs/demo_script.md](file:///c:/hackathon-projects/naadi/docs/demo_script.md)
+  * Screen recording instructions: Captured in final response logs, backup demo videos saveable to `Captures` or custom Snipping Tool files.
+
+## 9. Agent Behavior Rules
+- NEVER open a new browser window/tab to test something unless explicitly asked to. Before starting any dev server, check if it's already running (check the port) and reuse it instead of starting a duplicate.
+- Prefer testing via terminal output, curl commands, or reading API responses directly over opening a browser.
+- If a browser check is genuinely necessary, do it ONCE, report what you see, and close/stop there — don't repeatedly relaunch it.
+- Ask before running long-lived processes (dev servers) if one might already be active in another terminal.
 

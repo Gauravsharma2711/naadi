@@ -119,9 +119,9 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
             >
               {displayCount}
             </motion.span>
-            <span className="text-sm font-outfit text-sky-grey ml-0.5 font-bold tracking-wider uppercase">d</span>
+            <span className="text-sm font-display text-sky-grey ml-0.5 font-bold tracking-wider uppercase">d</span>
           </div>
-          <span className="text-[9px] font-outfit text-sky-grey uppercase tracking-widest font-extrabold mt-1">
+          <span className="text-[9px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-1">
             until ready
           </span>
         </div>
@@ -130,7 +130,7 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
       {/* Probability Badge */}
       <div className="mt-4 flex items-center gap-1.5 bg-sky-dark px-4 py-1.5 rounded-full border border-sky-midnight relative z-10 shadow-sm">
         <span className={`h-1.5 w-1.5 rounded-full ${activeProbability >= 0.75 ? 'bg-sky-gold' : 'bg-sky-sunset'} animate-pulse`} />
-        <span className="text-[10px] font-outfit text-sky-grey font-bold uppercase tracking-wider">
+        <span className="text-[10px] font-display text-sky-grey font-bold uppercase tracking-wider">
           Probability: <strong className={`${stageColor} font-extrabold`}>{(activeProbability * 100).toFixed(1)}%</strong>
         </span>
         <span className={`text-[9px] uppercase tracking-widest font-extrabold ml-1 px-1.5 py-0.5 rounded-full bg-sky-sunset ${stageColor}`}>

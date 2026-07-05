@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function ActionCard({ action, daysSaved, reason, featureId, onComplete, isCompleted }) {
   const [isCompleting, setIsCompleting] = useState(false);
+  const completingRef = useRef(false);
 
   const handleComplete = async () => {
-    if (isCompleted) return;
+    if (isCompleted || completingRef.current) return;
+    completingRef.current = true;
     setIsCompleting(true);
     try {
       await onComplete(featureId);
     } catch (e) {
       console.error(e);
+      completingRef.current = false;
     } finally {
       setIsCompleting(false);
     }
@@ -25,7 +28,7 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
       transition={{ duration: 0.3 }}
       className={`p-5 border rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 relative overflow-hidden ${
         isCompleted
-          ? "bg-[#F7F9F8]/50 border-sky-midnight opacity-65"
+          ? "bg-sky-dark/50 border-sky-midnight opacity-65"
           : "bg-sky-card border-sky-midnight hover:border-sky-gold/40 hover:shadow-[0_8px_30px_rgba(0,104,74,0.03)]"
       }`}
     >
@@ -48,7 +51,7 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
           <span className={`text-2xl font-display font-bold leading-none ${isCompleted ? 'text-sky-grey' : 'text-sky-gold'}`}>
             +{daysSaved}
           </span>
-          <span className="text-[8px] font-outfit text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">
+          <span className="text-[8px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">
             days saved
           </span>
         </div>
@@ -60,7 +63,7 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
             isCompleted
               ? "bg-sky-sunset text-sky-gold border border-sky-gold/15 cursor-not-allowed"
               : isCompleting
-              ? "bg-[#F3F4F6] text-sky-grey border border-sky-midnight cursor-not-allowed"
+              ? "bg-sky-dark text-sky-grey border border-sky-midnight cursor-not-allowed"
               : "bg-sky-gold hover:bg-[#00523A] text-white shadow-sm"
           }`}
         >

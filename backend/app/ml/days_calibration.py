@@ -23,7 +23,7 @@ def get_action_recommendation(feature_name: str, reason: str) -> str:
         return "Set up automated bank transfers for payroll to ensure EPFO contributions are processed before the 15th deadline."
     return "Optimize this financial indicator to build stronger credit compliance."
 
-def calculate_days_to_ready(features_dict: Dict[str, float]) -> Dict:
+def calculate_days_to_ready(features_dict: Dict[str, float], msme_id: str = None) -> Dict:
     """
     Calculates the 'Days to Credit-Ready' countdown and ranks actionable steps
     to reduce this count based on SHAP values.
@@ -42,6 +42,69 @@ def calculate_days_to_ready(features_dict: Dict[str, float]) -> Dict:
     6. For the negative contributors (SHAP value < 0), we allocate the 'days saved' by calculating
        each feature's relative proportion of the negative SHAP sum.
     """
+    # 0. Override for Demo MSME Profiles
+    if msme_id == "demo-msme-a":
+        gst_completed = (features_dict.get('filing_on_time_rate', 0.0) >= 0.99)
+        upi_completed = (features_dict.get('upi_trend_slope', 0.0) >= 0.049)
+        cf_completed = (features_dict.get('cashflow_volatility_score', 1.0) <= 0.051)
+        
+        days_to_ready = 47
+        if gst_completed:
+            days_to_ready -= 20
+        if upi_completed:
+            days_to_ready -= 15
+        if cf_completed:
+            days_to_ready -= 12
+            
+        days_to_ready = max(0, days_to_ready)
+        
+        prob_range = 0.98 - 0.5766
+        probability = 0.5766 + ((47 - days_to_ready) / 47) * prob_range
+        
+        recommendations = []
+        if not gst_completed:
+            recommendations.append({
+                "feature": "filing_on_time_rate",
+                "label": "GST Filing Compliance",
+                "shap_value": -0.6000,
+                "reason": "Your GST filing on-time rate is 58.3%, with approximately 5 delayed filings over the last 12 months.",
+                "action": "File your GST returns on time for the next 3 consecutive months to rebuild compliance history.",
+                "days_saved": 20
+            })
+        if not upi_completed:
+            recommendations.append({
+                "feature": "upi_trend_slope",
+                "label": "UPI Settlement Growth",
+                "shap_value": -0.4500,
+                "reason": "Your monthly UPI settlement volume shows a declining trend of 3.9% month-on-month.",
+                "action": "Route more digital customer billing through UPI to boost your documented monthly sales momentum.",
+                "days_saved": 15
+            })
+        if not cf_completed:
+            recommendations.append({
+                "feature": "cashflow_volatility_score",
+                "label": "Cashflow Stability",
+                "shap_value": -0.3000,
+                "reason": "Your cashflow volatility score is moderate (0.28), showing seasonal or fluctuating bank inflows.",
+                "action": "Maintain a 15% cash reserve buffer in your primary account to stabilize month-to-month cashflow swings.",
+                "days_saved": 12
+            })
+            
+        recommendations.sort(key=lambda x: x["days_saved"], reverse=True)
+        
+        return {
+            "credit_readiness_probability": round(probability, 4),
+            "days_to_ready": days_to_ready,
+            "recommendations": recommendations[:3]
+        }
+        
+    elif msme_id == "demo-msme-b":
+        return {
+            "credit_readiness_probability": 0.9800,
+            "days_to_ready": 0,
+            "recommendations": []
+        }
+
     # 1. Get current probability
     probability = predict_credit_readiness(features_dict)
     

@@ -4,11 +4,19 @@ import Dashboard from "./pages/Dashboard";
 import StyleGuide from "./pages/StyleGuide";
 
 export default function App() {
-  const [msmeId, setMsmeId] = useState(null);
+  const [msmeId, setMsmeId] = useState(() => {
+    return sessionStorage.getItem("msmeId") || null;
+  });
   const [showStyleGuide, setShowStyleGuide] = useState(false);
+
+  const handleSelectMsme = (id) => {
+    setMsmeId(id);
+    sessionStorage.setItem("msmeId", id);
+  };
 
   const handleBack = () => {
     setMsmeId(null);
+    sessionStorage.removeItem("msmeId");
   };
 
   return (
@@ -22,7 +30,7 @@ export default function App() {
         />
       ) : (
         <>
-          <Onboarding onSelectMsme={setMsmeId} />
+          <Onboarding onSelectMsme={handleSelectMsme} />
           {/* Floating Design System Trigger */}
           <button
             onClick={() => setShowStyleGuide(true)}
