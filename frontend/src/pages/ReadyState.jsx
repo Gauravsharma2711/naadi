@@ -174,6 +174,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
             shapBreakdown={shapBreakdown} 
             msmeData={msmeData}
             daysRemaining={0}
+            msmeId={msmeId}
           />
         )}
       </div>

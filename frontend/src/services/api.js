@@ -83,3 +83,16 @@ export async function simulateScore(msmeId, simulatedFeatures) {
   return response.json();
 }
 
+/**
+ * Fetches the generated financial story narrative for a given MSME.
+ * GET /msme/{msme_id}/story
+ */
+export async function getMsmeStory(msmeId) {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/story`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch story for MSME ${msmeId}`);
+  }
+  return response.json();
+}
+
+

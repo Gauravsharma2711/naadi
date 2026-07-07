@@ -320,6 +320,7 @@ export default function Dashboard({ msmeId, onBack }) {
             shapBreakdown={shapBreakdown} 
             msmeData={msmeData}
             daysRemaining={daysRemaining}
+            msmeId={msmeId}
           />
         )}
 

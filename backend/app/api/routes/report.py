@@ -7,6 +7,7 @@ from app.ml.days_calibration import calculate_days_to_ready
 from app.ml.shap_explain import explain_prediction
 import boto3
 from botocore.exceptions import ClientError
+from botocore.config import Config
 from dotenv import load_dotenv
 
 # Load env variables from backend/.env
@@ -19,10 +20,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.graphics.shapes import Drawing, Wedge, Circle, String, Rect
+from datetime import datetime
 
 def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_breakdown: list) -> bytes:
     """
-    Generates a premium PDF report using ReportLab.
+    Generates a premium, highly personalized PDF report using ReportLab.
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -37,22 +40,24 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
     story = []
     styles = getSampleStyleSheet()
 
-    # Define custom sprout colors
+    # Define custom design system colors (from DESIGN_SYSTEM.md)
     c_primary = colors.HexColor("#00684A")   # MongoDB Forest Green
-    c_success = colors.HexColor("#00D66B")   # Sprout Green
-    c_dark = colors.HexColor("#001E2B")      # Deep Text
+    c_accent = colors.HexColor("#00D66B")    # Primary Accent Green
+    c_track = colors.HexColor("#B8E8C8")     # Muted Sprout Green
+    c_dark = colors.HexColor("#001E2B")      # Deep Charcoal Text
     c_muted = colors.HexColor("#5A6B70")     # Muted Text
-    c_light = colors.HexColor("#F7F9F8")     # Clean Off-white
+    c_light = colors.HexColor("#F7F9F8")     # Surface Clean Off-white
+    c_alert = colors.HexColor("#D64545")     # Error / Risk Red
 
     # Custom typography styles
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=24,
-        leading=28,
+        fontSize=20,
+        leading=24,
         textColor=c_primary,
-        spaceAfter=6
+        spaceAfter=4
     )
     
     subtitle_style = ParagraphStyle(
@@ -62,18 +67,28 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
         fontSize=10,
         leading=14,
         textColor=c_muted,
-        spaceAfter=20
+    )
+    
+    headline_style = ParagraphStyle(
+        'HeadlineStyle',
+        parent=styles['Heading2'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=18,
+        textColor=c_primary,
+        spaceBefore=10,
+        spaceAfter=15
     )
 
     section_header_style = ParagraphStyle(
         'SecHeader',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=14,
-        leading=18,
+        fontSize=12,
+        leading=15,
         textColor=c_primary,
-        spaceBefore=14,
-        spaceAfter=8,
+        spaceBefore=12,
+        spaceAfter=6,
         keepWithNext=True
     )
 
@@ -81,8 +96,8 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
         'BodyTextCustom',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=10,
-        leading=14,
+        fontSize=9.5,
+        leading=13.5,
         textColor=c_dark
     )
 
@@ -92,49 +107,103 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
         fontName='Helvetica-Bold'
     )
 
-    # 1. Document Title & Subtitle
-    story.append(Paragraph("Naadi (Din) Credit Readiness Report", title_style))
-    story.append(Paragraph(f"AI-Powered Financial Health Card • Business ID: {msme_id}", subtitle_style))
-    story.append(Spacer(1, 10))
+    muted_body_style = ParagraphStyle(
+        'MutedBodyTextCustom',
+        parent=body_style,
+        fontName='Helvetica',
+        textColor=c_muted
+    )
 
-    # 2. Executive Status Panel
-    days_rem = calibration["days_to_ready"]
-    prob = calibration["credit_readiness_probability"]
-    status_str = "PRE-APPROVED / READY" if days_rem <= 0 else f"{days_rem} DAYS REMAINING"
-    
-    status_data = [
+    # 1. Branded Header Table (Left: Company & Date; Right: Branded Title)
+    report_date = datetime.now().strftime("%B %d, %Y")
+    clean_msme_id = msme_id.replace('demo-msme-', '').upper()
+    header_data = [
         [
-            Paragraph("<b>Overall Status:</b>", body_style), 
-            Paragraph(f"<font color='{c_primary.hexval()}'><b>{status_str}</b></font>", bold_body_style)
-        ],
-        [
-            Paragraph("<b>Readiness Probability:</b>", body_style), 
-            Paragraph(f"<b>{(prob * 100):.1f}%</b>", body_style)
-        ],
-        [
-            Paragraph("<b>Business Name:</b>", body_style), 
-            Paragraph(f"MSME {msme_id}", body_style)
-        ],
-        [
-            Paragraph("<b>Discipline Rating:</b>", body_style), 
-            Paragraph(msme_data.get('discipline_level', 'Average').upper(), bold_body_style)
+            Paragraph(f"<b>MSME Profile:</b> Business {clean_msme_id}<br/><b>Issued:</b> {report_date}", body_style),
+            Paragraph("<b>Naadi (Din) Financial Health Card</b><br/><font color='#5A6B70'>AI Credit Readiness Audit</font>", ParagraphStyle('RHeader', parent=body_style, alignment=2))
         ]
     ]
+    t_header = Table(header_data, colWidths=[250, 280])
+    t_header.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LINEBELOW', (0, 0), (-1, -1), 1, colors.HexColor("#E3E1DE")),
+    ]))
+    story.append(t_header)
+    story.append(Spacer(1, 10))
+
+    # 2. Dynamic Wording Status Headline
+    days_rem = calibration["days_to_ready"]
+    if days_rem <= 0:
+        status_headline = "Loan-ready today — all systems clear"
+    elif days_rem <= 15:
+        status_headline = f"{days_rem} days from loan-ready — minor adjustments remaining"
+    elif days_rem <= 60:
+        status_headline = f"{days_rem} days from loan-ready — mid-journey progress"
+    else:
+        status_headline = f"{days_rem} days — significant gaps to address before credit-readiness"
+
+    story.append(Paragraph(f"Current State: <font color='{c_primary.hexval()}'>{status_headline}</font>", headline_style))
+
+    # 3. Visual Summary Section: Growth-Ring Dial + Metadata Side-by-Side
+    # Create the Growth-Ring Dial drawing
+    d_dial = Drawing(160, 140)
+    # The progress goes from 0.0 to 1.0 (where 0.0 means 180 days remaining, and 1.0 is 0 days remaining)
+    progress = max(0.0, min(1.0, (180 - days_rem) / 180))
     
-    t_status = Table(status_data, colWidths=[180, 320])
-    t_status.setStyle(TableStyle([
+    # Draw Background Track Wedge (-225 to 45 is a 270-degree arc leaving a bottom gap)
+    w_track = Wedge(80, 70, 60, -225, 45, width=12)
+    w_track.fillColor = c_track
+    w_track.strokeColor = None
+    d_dial.add(w_track)
+    
+    # Draw Filled Progress Wedge
+    if progress > 0:
+        w_fill = Wedge(80, 70, 60, -225, -225 + progress * 270, width=12)
+        w_fill.fillColor = c_accent
+        w_fill.strokeColor = None
+        d_dial.add(w_fill)
+        
+    # Draw Text inside the growth-ring dial
+    if days_rem == 0:
+        s_days = String(80, 66, "READY", textAnchor='middle', fontName='Helvetica-Bold', fontSize=18, fillColor=c_primary)
+        s_label = String(80, 52, "LOAN READY", textAnchor='middle', fontName='Helvetica-Bold', fontSize=6.5, fillColor=c_muted)
+    else:
+        s_days = String(80, 64, f"{days_rem}", textAnchor='middle', fontName='Helvetica-Bold', fontSize=24, fillColor=c_dark)
+        s_label = String(80, 52, "DAYS TO READY", textAnchor='middle', fontName='Helvetica-Bold', fontSize=6.5, fillColor=c_muted)
+        
+    d_dial.add(s_days)
+    d_dial.add(s_label)
+
+    # Metadata Panel (Right side)
+    prob = calibration["credit_readiness_probability"]
+    discipline = msme_data.get('discipline_level', 'Average').upper()
+    
+    meta_html = f"""
+    <b>Credit Readiness Index:</b> {(prob * 100):.1f}%<br/>
+    <b>Financial Discipline:</b> {discipline}<br/>
+    <b>Days to Loan-Ready:</b> {days_rem if days_rem > 0 else '0 (Pre-Approved)'} days<br/>
+    <b>EPFO Coverage:</b> {'Active' if msme_data.get('has_employees') else 'Exempt (No Employees)'}
+    """
+    
+    meta_table_data = [
+        [d_dial, Paragraph(meta_html, body_style)]
+    ]
+    t_summary = Table(meta_table_data, colWidths=[180, 350])
+    t_summary.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), c_light),
-        ('PADDING', (0, 0), (-1, -1), 8),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('PADDING', (0, 0), (-1, -1), 10),
         ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
+        ('LINEABOVE', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
     ]))
-    story.append(t_status)
-    story.append(Spacer(1, 20))
+    story.append(t_summary)
+    story.append(Spacer(1, 10))
 
-    # 3. Ledger Metrics Breakdown
-    story.append(Paragraph("I. Ledger Indicators", section_header_style))
+    # 4. Ledger Metrics Breakdown Table
+    story.append(Paragraph("I. Key Ledger Indicators", section_header_style))
     
     indicators_headers = [
         Paragraph("<b>Indicator</b>", bold_body_style), 
@@ -146,101 +215,130 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
     
     # Map metrics to row outputs
     metrics_map = [
-        ("GST Filing History", f"{msme_data['filing_on_time_rate']:.1%}", "Excellent" if msme_data['filing_on_time_rate'] >= 0.9 else "Needs Improvement"),
+        ("GST Filing Compliance", f"{msme_data['filing_on_time_rate']:.1%}", "Excellent" if msme_data['filing_on_time_rate'] >= 0.9 else "Needs Improvement"),
         ("UPI Settlement Trend", f"{msme_data['upi_trend_slope']:.1%}/mo", "Growing" if msme_data['upi_trend_slope'] > 0 else "Declining"),
         ("Cashflow Stability", f"{msme_data['cashflow_volatility_score']:.2f}", "Stable" if msme_data['cashflow_volatility_score'] < 0.15 else "Volatile"),
         ("Buyer Concentration Risk", f"{msme_data['top_buyer_concentration_pct']:.1%}", "Healthy" if msme_data['top_buyer_concentration_pct'] <= 0.35 else "Concentration Warning"),
     ]
     
     if msme_data.get('has_employees'):
-        metrics_map.append(("EPFO Consistency", f"{msme_data['payroll_consistency_score']:.1%}", "Consistent" if msme_data['payroll_consistency_score'] >= 0.9 else "Inconsistent"))
+        metrics_map.append(("EPFO Payroll Consistency", f"{msme_data['payroll_consistency_score']:.1%}", "Consistent" if msme_data['payroll_consistency_score'] >= 0.9 else "Inconsistent"))
     else:
-        metrics_map.append(("EPFO Consistency", "N/A (No employees)", "Exempt"))
+        metrics_map.append(("EPFO Payroll Consistency", "N/A (No Employees)", "Exempt"))
 
     for ind, val, rating in metrics_map:
-        rating_color = c_primary if "Excellent" in rating or "Stable" in rating or "Healthy" in rating or "Growing" in rating or "Consistent" in rating else c_muted
+        rating_color = c_primary if "Excellent" in rating or "Stable" in rating or "Healthy" in rating or "Growing" in rating or "Consistent" in rating or "Exempt" in rating else c_alert
         indicators_rows.append([
             Paragraph(ind, body_style),
             Paragraph(val, body_style),
             Paragraph(f"<font color='{rating_color.hexval()}'><b>{rating}</b></font>", bold_body_style)
         ])
         
-    t_indicators = Table(indicators_rows, colWidths=[200, 150, 150])
+    t_indicators = Table(indicators_rows, colWidths=[210, 160, 160])
     t_indicators.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#00684A")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('PADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
-    ]))
-    # Quick fix: Table Style header color text overrides
-    for i in range(len(indicators_headers)):
-        indicators_headers[i].style.textColor = colors.white
-        
-    story.append(t_indicators)
-    story.append(Spacer(1, 20))
-
-    # 4. Explainable AI Insights (SHAP)
-    story.append(Paragraph("II. Credit Health Drivers (SHAP AI Analysis)", section_header_style))
-    
-    shap_rows = [[
-        Paragraph("<b>Ledger Driver</b>", bold_body_style), 
-        Paragraph("<b>Impact</b>", bold_body_style), 
-        Paragraph("<b>Details / System Observation</b>", bold_body_style)
-    ]]
-    # Reset headers back to black text
-    for item in shap_rows[0]:
-        item.style.textColor = colors.white
-
-    for item in shap_breakdown:
-        sv = item["shap_value"]
-        impact = "POSITIVE" if sv >= 0 else "NEGATIVE"
-        impact_color = c_success if sv >= 0 else colors.HexColor("#D64545")
-        
-        shap_rows.append([
-            Paragraph(item["label"], body_style),
-            Paragraph(f"<font color='{impact_color.hexval()}'><b>{impact} ({sv:+.2f})</b></font>", bold_body_style),
-            Paragraph(item["reason"], body_style)
-        ])
-        
-    t_shap = Table(shap_rows, colWidths=[150, 110, 240])
-    t_shap.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), c_primary),
         ('PADDING', (0, 0), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
-    story.append(t_shap)
-    story.append(Spacer(1, 20))
+    for item in indicators_headers:
+        item.style.textColor = colors.white
+        
+    story.append(t_indicators)
+    story.append(Spacer(1, 10))
 
-    # 5. Recovery Action Plan
+    # 5. Explainable AI Insights (Why Section)
+    story.append(Paragraph("II. Credit Health Drivers (AI Diagnostic)", section_header_style))
+    
+    # Split explanations into Positive and Negative drivers
+    negatives = []
+    positives = []
+    
+    for item in shap_breakdown:
+        sv = item["shap_value"]
+        if sv < 0:
+            negatives.append(item)
+        else:
+            positives.append(item)
+            
+    # Sort them
+    negatives.sort(key=lambda x: x["shap_value"])  # Most negative first
+    positives.sort(key=lambda x: x["shap_value"], reverse=True) # Most positive first
+    
+    story.append(Paragraph("<b>Key Gaps to Address</b>", bold_body_style))
+    story.append(Spacer(1, 4))
+    if negatives:
+        for item in negatives:
+            bullet_html = f"<font color='{c_alert.hexval()}'>■</font> <b>{item['label']}</b> (Impact: {item['shap_value']:+.2f})<br/>{item['reason']}"
+            story.append(Paragraph(bullet_html, ParagraphStyle('NegBullet', parent=body_style, leftIndent=15, spaceBefore=2, spaceAfter=4)))
+    else:
+        story.append(Paragraph("No negative drivers identified. All ledger components are performing optimally.", muted_body_style))
+        
+    story.append(Spacer(1, 6))
+    story.append(Paragraph("<b>Supporting Strengths</b>", bold_body_style))
+    story.append(Spacer(1, 4))
+    if positives:
+        for item in positives:
+            bullet_html = f"<font color='{c_primary.hexval()}'>■</font> <b>{item['label']}</b> (Impact: {item['shap_value']:+.2f})<br/>{item['reason']}"
+            story.append(Paragraph(bullet_html, ParagraphStyle('PosBullet', parent=body_style, leftIndent=15, spaceBefore=2, spaceAfter=4)))
+    else:
+        story.append(Paragraph("No positive drivers identified.", muted_body_style))
+        
+    story.append(Spacer(1, 10))
+
+    # 6. Action Plan Section (Checklist)
     story.append(Paragraph("III. Prescriptive Action Plan", section_header_style))
     if days_rem <= 0:
         story.append(Paragraph("Congratulations! Your ledger metrics are clean. No corrective actions required. You are fully credit-ready.", body_style))
     else:
         recs = calibration.get("recommendations", [])
-        action_rows = [[
-            Paragraph("<b>Target Metric</b>", bold_body_style), 
-            Paragraph("<b>Prescribed Growth Action</b>", bold_body_style), 
-            Paragraph("<b>Days Saved</b>", bold_body_style)
-        ]]
-        for item in action_rows[0]:
-            item.style.textColor = colors.white
-
-        for rec in recs:
-            action_rows.append([
-                Paragraph(rec["label"], body_style),
-                Paragraph(rec["action"], body_style),
-                Paragraph(f"<font color='{c_success.hexval()}'><b>+{rec['days_saved']} Days</b></font>", bold_body_style)
-            ])
+        
+        # Helper to generate a clean checklist checkbox
+        def make_checkbox_drawing():
+            d = Drawing(14, 14)
+            r = Rect(0, 1, 12, 12, fillColor=colors.HexColor("#FFFFFF"), strokeColor=c_muted, strokeWidth=1)
+            d.add(r)
+            return d
             
-        t_action = Table(action_rows, colWidths=[150, 260, 90])
-        t_action.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), c_primary),
-            ('PADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ]))
-        story.append(t_action)
+        action_table_data = []
+        for rec in recs:
+            checkbox = make_checkbox_drawing()
+            text_p = Paragraph(
+                f"<b>{rec['label']}</b> <font color='{c_primary.hexval()}'><b>(Saves {rec['days_saved']} Days)</b></font><br/>"
+                f"<font color='{c_muted.hexval()}'>{rec['action']}</font>",
+                body_style
+            )
+            action_table_data.append([checkbox, text_p])
+            
+        if action_table_data:
+            t_action = Table(action_table_data, colWidths=[25, 505])
+            t_action.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('PADDING', (0, 0), (-1, -1), 6),
+                ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor("#E3E1DE")),
+            ]))
+            story.append(t_action)
+        else:
+            story.append(Paragraph("No recommendations generated.", body_style))
+
+    # 7. Conditional Footer (Data sources)
+    used_sources = ["GST", "UPI", "Account Aggregator (AA)"]
+    if msme_data.get('has_employees', False):
+        used_sources.append("EPFO")
+    sources_str = ", ".join(used_sources[:-1]) + f", and {used_sources[-1]}"
+    
+    footer_style = ParagraphStyle(
+        'FooterStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica-Oblique',
+        fontSize=8,
+        leading=10,
+        textColor=c_muted,
+        alignment=1, # Centered
+        spaceBefore=25
+    )
+    story.append(Spacer(1, 10))
+    story.append(Paragraph(f"This report is generated using verified {sources_str} data. All analyses are proprietary to Naadi (Din) Credit Calibration Engine.", footer_style))
 
     doc.build(story)
     pdf_bytes = buffer.getvalue()
@@ -305,7 +403,11 @@ def get_msme_report(msme_id: str):
             's3',
             aws_access_key_id=aws_id,
             aws_secret_access_key=aws_key,
-            region_name=aws_region
+            region_name=aws_region,
+            config=Config(
+                signature_version='s3v4',
+                s3={'addressing_style': 'virtual'}
+            )
         )
         
         # Upload buffer
