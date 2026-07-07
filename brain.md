@@ -20,9 +20,26 @@
 ## 3. Folder Structure
 ```
 naadi/
-├── .git/
-└── docs/
-    └── build_guide.md
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── routes/ (actions, msme, score)
+│   │   ├── db/ (database)
+│   │   └── ml/ (days_calibration, feature_engineering, predict, shap_explain, train_model)
+│   ├── e2e_test.py
+│   └── requirements.txt
+├── data/
+│   └── synthetic_msme_dataset.csv
+├── docs/
+│   ├── build_guide.md
+│   └── demo_script.md
+└── frontend/
+    ├── src/
+    │   ├── components/ (ActionCard, AmbientBackground, CountdownDial, ScoreBreakdown)
+    │   ├── pages/ (Dashboard, Onboarding, ReadyState, StyleGuide)
+    │   └── services/ (api)
+    ├── package.json
+    └── tailwind.config.js
 ```
 
 ## 4. Current Status

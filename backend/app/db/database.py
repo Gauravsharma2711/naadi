@@ -64,6 +64,66 @@ def load_db() -> Dict[str, Dict]:
                 "payroll_consistency_score": 0.5,
                 "credit_ready": 1
             }
+        # C: 120+ days, compound risk (poor GST filing + high buyer concentration)
+        if "demo-msme-c" not in _msme_db:
+            _msme_db["demo-msme-c"] = {
+                "msme_id": "demo-msme-c",
+                "discipline_level": "poor",
+                "pattern": "declining",
+                "volatility_level": "high",
+                "has_employees": True,
+                "filing_on_time_rate": 0.583,
+                "upi_trend_slope": 0.01,
+                "cashflow_volatility_score": 0.25,
+                "top_buyer_concentration_pct": 0.80,
+                "payroll_consistency_score": 0.5,
+                "credit_ready": 0
+            }
+        # D: Close to ready (~12 days), no employees (no EPFO data)
+        if "demo-msme-d" not in _msme_db:
+            _msme_db["demo-msme-d"] = {
+                "msme_id": "demo-msme-d",
+                "discipline_level": "good",
+                "pattern": "growing",
+                "volatility_level": "low",
+                "has_employees": False,
+                "filing_on_time_rate": 0.917,
+                "upi_trend_slope": 0.038,
+                "cashflow_volatility_score": 0.09,
+                "top_buyer_concentration_pct": 0.32,
+                "payroll_consistency_score": 0.5,
+                "credit_ready": 0
+            }
+        # E: 8 days, one clear blocker (buyer concentration)
+        if "demo-msme-e" not in _msme_db:
+            _msme_db["demo-msme-e"] = {
+                "msme_id": "demo-msme-e",
+                "discipline_level": "good",
+                "pattern": "flat",
+                "volatility_level": "low",
+                "has_employees": True,
+                "filing_on_time_rate": 0.917,
+                "upi_trend_slope": 0.042,
+                "cashflow_volatility_score": 0.07,
+                "top_buyer_concentration_pct": 0.68,
+                "payroll_consistency_score": 0.917,
+                "credit_ready": 0
+            }
+        # F: Seasonal business, volatile but not actually risky (~32 days)
+        if "demo-msme-f" not in _msme_db:
+            _msme_db["demo-msme-f"] = {
+                "msme_id": "demo-msme-f",
+                "discipline_level": "average",
+                "pattern": "growing",
+                "volatility_level": "high",
+                "has_employees": True,
+                "filing_on_time_rate": 0.833,
+                "upi_trend_slope": 0.035,
+                "cashflow_volatility_score": 0.48,
+                "top_buyer_concentration_pct": 0.25,
+                "payroll_consistency_score": 0.75,
+                "credit_ready": 0
+            }
             
     return _msme_db
 

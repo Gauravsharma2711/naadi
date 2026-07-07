@@ -25,11 +25,11 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      whileHover={!isCompleted && !isCompleting ? { y: -4, scale: 1.02, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
+      whileHover={!isCompleted && !isCompleting ? { y: -3, scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
       transition={{ duration: 0.3 }}
       className={`p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 relative overflow-hidden ${
         isCompleted
-          ? "bg-sky-sunset/10 border border-sky-midnight opacity-65"
+          ? "bg-sky-gold/5 border border-sky-midnight opacity-65"
           : "bg-sky-card border border-sky-midnight shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
       }`}
     >
@@ -57,15 +57,18 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
           </span>
         </div>
 
-        <button
+        <motion.button
           onClick={handleComplete}
           disabled={isCompleting || isCompleted}
-          className={`px-5 py-2.5 rounded-xl font-display text-[9px] font-extrabold tracking-widest uppercase transition-all duration-300 ${
+          whileHover={!isCompleting && !isCompleted ? { scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" } : {}}
+          whileTap={!isCompleting && !isCompleted ? { scale: 0.98 } : {}}
+          transition={{ duration: 0.2 }}
+          className={`px-5 py-2.5 rounded-xl font-display text-[9px] font-extrabold tracking-widest uppercase transition-colors duration-300 ${
             isCompleted
               ? "bg-sky-sunset/30 text-sky-gold border border-sky-gold/15 cursor-not-allowed"
               : isCompleting
               ? "bg-sky-dark text-sky-grey border border-sky-midnight cursor-not-allowed"
-              : "bg-sky-gold hover:bg-[#00b056] text-white shadow-sm hover:shadow-[0_8px_20px_rgba(0,214,107,0.15)]"
+              : "bg-sky-gold hover:bg-[#00b056] text-white shadow-sm"
           }`}
         >
           {isCompleted ? (
@@ -86,7 +89,7 @@ export default function ActionCard({ action, daysSaved, reason, featureId, onCom
           ) : (
             "Complete"
           )}
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   );

@@ -116,8 +116,9 @@ export default function Onboarding({ onSelectMsme }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            whileHover={{ y: -2 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="w-full max-w-md bg-sky-card border border-sky-midnight p-8 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative z-10"
+            className="w-full max-w-md bg-sky-card border border-sky-midnight p-8 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 relative z-10"
           >
             <div className="space-y-6">
               <div className="text-center">
@@ -142,12 +143,15 @@ export default function Onboarding({ onSelectMsme }) {
                       placeholder="e.g. demo-msme-a"
                       className="flex-1 bg-white border border-sky-midnight rounded-xl px-5 py-3 font-display text-sky-cream placeholder-sky-grey/50 focus:outline-none focus:border-sky-gold transition-all duration-300 text-sm shadow-sm"
                     />
-                    <button
+                    <motion.button
                       type="submit"
-                      className="bg-sky-gold hover:bg-[#00b056] text-white px-6 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-sm"
+                      whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-sky-gold hover:bg-[#00b056] text-white px-6 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-colors duration-300 shadow-sm"
                     >
                       Next
-                    </button>
+                    </motion.button>
                   </div>
                   {inputError && (
                     <span className="text-xs text-sky-crimson font-medium block mt-1.5 pl-1">{inputError}</span>
@@ -163,28 +167,90 @@ export default function Onboarding({ onSelectMsme }) {
               </div>
 
               {/* Demo scenarios */}
-              <div className="space-y-3">
-                <div
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sky-midnight">
+                {/* Scenario A */}
+                <motion.div
                   onClick={() => handleDemoSelect("demo-msme-a")}
-                  className="p-4 bg-white border border-sky-midnight hover:border-sky-crimson hover:shadow-sm rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                  whileHover={{ y: -1.5, borderColor: "#D64545" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
                 >
-                  <div>
-                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo MSME A: 47 Days to Loan-Ready</h4>
-                    <p className="text-xs font-sans text-sky-grey mt-0.5">Starts at 47 days with 3 sensible, explainable actions.</p>
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo A: Mid-Journey (47 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">3 actions remaining. Balanced risk profile.</p>
                   </div>
-                  <div className="text-[9px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2.5 py-0.5 rounded-full tracking-wider">Demo A</div>
-                </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo A</div>
+                </motion.div>
 
-                <div
+                {/* Scenario B */}
+                <motion.div
                   onClick={() => handleDemoSelect("demo-msme-b")}
-                  className="p-4 bg-white border border-sky-midnight hover:border-sky-gold hover:shadow-sm rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
                 >
-                  <div>
-                    <h4 className="text-sm font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo MSME B: Pre-Approved (0 Days)</h4>
-                    <p className="text-xs font-sans text-sky-grey mt-0.5">Already pre-approved. Instantly shows the ready success state.</p>
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo B: Ready / Pre-Approved (0 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Excellent compliance. Pre-approved loan offer active.</p>
                   </div>
-                  <div className="text-[9px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2.5 py-0.5 rounded-full tracking-wider">Demo B</div>
-                </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo B</div>
+                </motion.div>
+
+                {/* Scenario C */}
+                <motion.div
+                  onClick={() => handleDemoSelect("demo-msme-c")}
+                  whileHover={{ y: -1.5, borderColor: "#D64545" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                >
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo C: Compound Risk (133 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Poor GST filing history & high buyer concentration risk.</p>
+                  </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo C</div>
+                </motion.div>
+
+                {/* Scenario D */}
+                <motion.div
+                  onClick={() => handleDemoSelect("demo-msme-d")}
+                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                >
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo D: Close to Ready (12 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">No employees (no EPFO data). Needs 1 concentration fix.</p>
+                  </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo D</div>
+                </motion.div>
+
+                {/* Scenario E */}
+                <motion.div
+                  onClick={() => handleDemoSelect("demo-msme-e")}
+                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                >
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo E: One Blocker (8 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Perfect filing/stability. 1 concentration blocker.</p>
+                  </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo E</div>
+                </motion.div>
+
+                {/* Scenario F */}
+                <motion.div
+                  onClick={() => handleDemoSelect("demo-msme-f")}
+                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                >
+                  <div className="pr-2">
+                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo F: Seasonal Business (32 Days)</h4>
+                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">High volatility cashflow but solid underlying business.</p>
+                  </div>
+                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo F</div>
+                </motion.div>
               </div>
 
               <div className="text-center mt-8 text-[9px] font-display text-sky-grey/70 uppercase tracking-widest font-semibold">
@@ -220,7 +286,8 @@ export default function Onboarding({ onSelectMsme }) {
                 return (
                   <motion.div
                     key={src.key}
-                    whileHover={!isLinked ? { y: -4, scale: 1.02, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
+                    whileHover={!isLinked ? { y: -4, scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
+                    transition={{ duration: 0.2 }}
                     className={`p-6 bg-sky-card border border-sky-midnight rounded-2xl flex flex-col justify-between h-64 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden`}
                   >
                     {/* Top indicator bar */}
@@ -277,14 +344,17 @@ export default function Onboarding({ onSelectMsme }) {
 
             {/* Primary Action Button */}
             <div className="w-full max-w-xs pt-4">
-              <button
+              <motion.button
                 onClick={handleConnect}
                 disabled={!allLinked || connecting}
-                className={`w-full py-4 rounded-xl font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
+                whileHover={allLinked && !connecting ? { scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" } : {}}
+                whileTap={allLinked && !connecting ? { scale: 0.98 } : {}}
+                transition={{ duration: 0.2 }}
+                className={`w-full py-4 rounded-xl font-display font-extrabold text-xs uppercase tracking-widest transition-colors duration-300 flex items-center justify-center gap-2 ${
                   connecting
                     ? "bg-sky-gold text-white cursor-wait"
                     : allLinked
-                    ? "bg-sky-gold hover:bg-[#00b056] text-white shadow-[0_8px_20px_rgba(0,214,107,0.15)] hover:scale-[1.02]"
+                    ? "bg-sky-gold hover:bg-[#00b056] text-white"
                     : "bg-sky-sunset text-sky-grey border border-sky-midnight cursor-not-allowed"
                 }`}
               >
@@ -299,7 +369,7 @@ export default function Onboarding({ onSelectMsme }) {
                 ) : (
                   "See My Countdown"
                 )}
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         )}

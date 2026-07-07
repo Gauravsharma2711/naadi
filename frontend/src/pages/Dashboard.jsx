@@ -5,6 +5,7 @@ import ActionCard from "../components/ActionCard";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import { getMsmeScore, completeAction } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
+import ReadyState from "./ReadyState";
 
 export default function Dashboard({ msmeId, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -144,6 +145,18 @@ export default function Dashboard({ msmeId, onBack }) {
   const shapBreakdown = scoreData?.shap_breakdown ?? [];
   const maxDays = 180; // Maximum possible count from calibration heuristic
 
+  if (daysRemaining <= 0) {
+    return (
+      <ReadyState
+        msmeId={msmeId}
+        onBack={onBack}
+        probability={probability}
+        shapBreakdown={shapBreakdown}
+        msmeData={msmeData}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-sky-dark px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground daysRemaining={daysRemaining} />
@@ -153,14 +166,16 @@ export default function Dashboard({ msmeId, onBack }) {
         {/* Navigation & Header */}
         <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-3">
-            <button
+            <motion.button
               onClick={onBack}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               className="text-sky-grey hover:text-sky-cream transition-colors duration-200"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-            </button>
+            </motion.button>
             <div>
               <h2 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-cream leading-tight">
                 Din <span className="text-[10px] font-display font-bold text-sky-gold uppercase tracking-widest bg-sky-sunset px-2 py-0.5 rounded ml-1 border border-sky-gold/10">Dashboard</span>
@@ -195,83 +210,41 @@ export default function Dashboard({ msmeId, onBack }) {
 
           {/* Right Column: Actions Stack or Success Offer Card (~40% width) */}
           <section className="md:col-span-2 space-y-4 w-full">
-            {daysRemaining <= 0 ? (
-              /* Success Pre-Approved Offer Card */
-              <motion.div
-                key="success-offer"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="p-6 bg-sky-card border border-sky-midnight rounded-2xl shadow-[0_8px_20px_rgba(0,214,107,0.06)] hover:shadow-[0_8px_20px_rgba(0,214,107,0.12)] space-y-6 relative overflow-hidden transition-all duration-300"
-              >
-                {/* Visual success top bar */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-sky-gold" />
-                
-                <div>
-                  <span className="text-2xl">🌱</span>
-                  <h3 className="text-lg font-display uppercase tracking-wider font-extrabold text-sky-cream mt-2">
-                    Pre-Approved Loan Offer
-                  </h3>
-                  <p className="text-xs font-sans text-sky-grey mt-2 leading-relaxed">
-                    Your business has met all eligibility benchmarks. You are pre-approved for immediate disbursement.
-                  </p>
-                </div>
-
-                <div className="border-t border-b border-sky-midnight py-4 my-2 flex justify-between items-center">
-                  <div>
-                    <span className="text-2xl font-display font-extrabold text-sky-cream">₹10,00,000</span>
-                    <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Approved Limit</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xl font-display font-extrabold text-sky-gold">11.5%</span>
-                    <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Annual APR</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => alert("Application submitted successfully! Your funds are being disbursed.")}
-                  className="w-full py-3.5 bg-sky-gold hover:bg-[#00b056] text-white rounded-xl font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_8px_20px_rgba(0,214,107,0.15)] hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,214,107,0.22)]"
-                >
-                  Apply Now
-                </button>
-              </motion.div>
-            ) : (
-              /* Action Cards Stack */
-              <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
-                <div className="border-b border-sky-midnight pb-3 flex justify-between items-baseline">
-                  <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-cream">
-                    Accelerate Growth
-                  </h3>
-                  <span className="text-[9px] font-display text-sky-grey font-bold uppercase tracking-widest">
-                    {actions.length} action{actions.length !== 1 ? "s" : ""} left
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <AnimatePresence mode="popLayout">
-                    {actions.length === 0 ? (
-                      <p className="text-xs font-sans text-sky-grey text-center py-4">
-                        No actions remaining. Keep maintaining credit hygiene.
-                      </p>
-                    ) : (
-                      actions.map((item) => (
-                        <ActionCard
-                          key={item.action_id}
-                          featureId={item.action_id}
-                          action={item.action}
-                          daysSaved={item.days_saved}
-                          reason={
-                            shapBreakdown.find(s => s.feature === item.action_id)?.reason || ""
-                          }
-                          onComplete={handleActionComplete}
-                          isCompleted={completedActions.has(item.action_id)}
-                        />
-                      ))
-                    )}
-                  </AnimatePresence>
-                </div>
+            {/* Action Cards Stack */}
+            <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
+              <div className="border-b border-sky-midnight pb-3 flex justify-between items-baseline">
+                <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-cream">
+                  Accelerate Growth
+                </h3>
+                <span className="text-[9px] font-display text-sky-grey font-bold uppercase tracking-widest">
+                  {actions.length} action{actions.length !== 1 ? "s" : ""} left
+                </span>
               </div>
-            )}
+
+              <div className="space-y-4">
+                <AnimatePresence mode="popLayout">
+                  {actions.length === 0 ? (
+                    <p className="text-xs font-sans text-sky-grey text-center py-4">
+                      No actions remaining. Keep maintaining credit hygiene.
+                    </p>
+                  ) : (
+                    actions.map((item) => (
+                      <ActionCard
+                        key={item.action_id}
+                        featureId={item.action_id}
+                        action={item.action}
+                        daysSaved={item.days_saved}
+                        reason={
+                          shapBreakdown.find(s => s.feature === item.action_id)?.reason || ""
+                        }
+                        onComplete={handleActionComplete}
+                        isCompleted={completedActions.has(item.action_id)}
+                      />
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </section>
 
         </div>

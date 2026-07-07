@@ -105,6 +105,97 @@ def calculate_days_to_ready(features_dict: Dict[str, float], msme_id: str = None
             "recommendations": []
         }
 
+    # D: Close to ready, no employees — only 1 blocker (buyer concentration)
+    elif msme_id == "demo-msme-d":
+        conc_completed = (features_dict.get('top_buyer_concentration_pct', 1.0) <= 0.21)
+
+        days_to_ready = 0 if conc_completed else 12
+        probability = 0.9800 if conc_completed else 0.7240
+
+        recommendations = []
+        if not conc_completed:
+            recommendations.append({
+                "feature": "top_buyer_concentration_pct",
+                "label": "Buyer Concentration Risk",
+                "shap_value": -0.3200,
+                "reason": f"Moderate customer concentration: {features_dict['top_buyer_concentration_pct']:.1%} of your revenue comes from your top buyer.",
+                "action": "Acquire 1-2 new recurring clients to diversify revenue and reduce exposure to your largest customer.",
+                "days_saved": 12
+            })
+
+        return {
+            "credit_readiness_probability": round(probability, 4),
+            "days_to_ready": days_to_ready,
+            "recommendations": recommendations
+        }
+
+    # E: 8 days, one clear blocker (high buyer concentration)
+    elif msme_id == "demo-msme-e":
+        conc_completed = (features_dict.get('top_buyer_concentration_pct', 1.0) <= 0.21)
+
+        days_to_ready = 0 if conc_completed else 8
+        probability = 0.9800 if conc_completed else 0.7370
+
+        recommendations = []
+        if not conc_completed:
+            recommendations.append({
+                "feature": "top_buyer_concentration_pct",
+                "label": "Buyer Concentration Risk",
+                "shap_value": -0.4100,
+                "reason": f"High customer concentration: {features_dict['top_buyer_concentration_pct']:.1%} of your revenue comes from a single top buyer, posing high risk.",
+                "action": "Acquire 1-2 new recurring clients to diversify revenue and reduce exposure to your largest customer.",
+                "days_saved": 8
+            })
+
+        return {
+            "credit_readiness_probability": round(probability, 4),
+            "days_to_ready": days_to_ready,
+            "recommendations": recommendations
+        }
+
+    # F: Seasonal business, volatile cashflow but decent otherwise (~32 days)
+    elif msme_id == "demo-msme-f":
+        cf_completed = (features_dict.get('cashflow_volatility_score', 1.0) <= 0.051)
+        gst_completed = (features_dict.get('filing_on_time_rate', 0.0) >= 0.99)
+
+        days_to_ready = 32
+        if cf_completed:
+            days_to_ready -= 22
+        if gst_completed:
+            days_to_ready -= 10
+        days_to_ready = max(0, days_to_ready)
+
+        prob_range = 0.98 - 0.6300
+        probability = 0.6300 + ((32 - days_to_ready) / 32) * prob_range
+
+        recommendations = []
+        if not cf_completed:
+            recommendations.append({
+                "feature": "cashflow_volatility_score",
+                "label": "Cashflow Stability",
+                "shap_value": -0.5800,
+                "reason": f"Your cashflow volatility score is high ({features_dict['cashflow_volatility_score']:.2f}), indicating seasonal fluctuations in monthly bank inflows.",
+                "action": "Maintain a 15% cash reserve buffer in your primary account to stabilize month-to-month cashflow swings.",
+                "days_saved": 22
+            })
+        if not gst_completed:
+            recommendations.append({
+                "feature": "filing_on_time_rate",
+                "label": "GST Filing Compliance",
+                "shap_value": -0.2200,
+                "reason": f"Your GST filing on-time rate is {features_dict['filing_on_time_rate']:.1%}, with approximately {round((1.0 - features_dict['filing_on_time_rate']) * 12)} delayed filings over the last 12 months.",
+                "action": "File your GST returns on time for the next 3 consecutive months to rebuild compliance history.",
+                "days_saved": 10
+            })
+
+        recommendations.sort(key=lambda x: x["days_saved"], reverse=True)
+
+        return {
+            "credit_readiness_probability": round(probability, 4),
+            "days_to_ready": days_to_ready,
+            "recommendations": recommendations[:3]
+        }
+
     # 1. Get current probability
     probability = predict_credit_readiness(features_dict)
     
