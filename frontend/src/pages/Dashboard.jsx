@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CountdownDial from "../components/CountdownDial";
 import ActionCard from "../components/ActionCard";
 import ScoreBreakdown from "../components/ScoreBreakdown";
-import { getMsmeScore, completeAction } from "../services/api";
+import { getMsmeScore, completeAction, simulateScore } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
 import ReadyState from "./ReadyState";
 
@@ -13,6 +13,38 @@ export default function Dashboard({ msmeId, onBack }) {
   const [scoreData, setScoreData] = useState(null);
   const [msmeData, setMsmeData] = useState(null);
   const [completedActions, setCompletedActions] = useState(new Set());
+  const [reductionPct, setReductionPct] = useState(0);
+  const [simulatedDays, setSimulatedDays] = useState(null);
+
+  // Simulation logic triggered by slider
+  useEffect(() => {
+    if (!msmeData || !msmeId) return;
+    const baseVal = msmeData.top_buyer_concentration_pct;
+    const simulatedVal = baseVal * (1 - reductionPct / 100);
+    
+    let active = true;
+    async function runSim() {
+      try {
+        const res = await simulateScore(msmeId, { top_buyer_concentration_pct: simulatedVal });
+        if (active) {
+          setSimulatedDays(res.days_remaining);
+        }
+      } catch (err) {
+        console.warn("Simulation failed:", err);
+      }
+    }
+    
+    if (reductionPct > 0) {
+      runSim();
+    } else {
+      setSimulatedDays(null);
+    }
+    
+    return () => {
+      active = false;
+    };
+  }, [reductionPct, msmeData, msmeId]);
+
 
   // Load score data from the real backend on page load
   useEffect(() => {
@@ -205,6 +237,7 @@ export default function Dashboard({ msmeId, onBack }) {
               daysRemaining={daysRemaining} 
               maxDays={maxDays} 
               probability={probability} 
+              simulatedDays={simulatedDays}
             />
           </main>
 
@@ -243,6 +276,38 @@ export default function Dashboard({ msmeId, onBack }) {
                     ))
                   )}
                 </AnimatePresence>
+              </div>
+            </div>
+
+            {/* What-If Simulator Panel */}
+            <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
+              <div className="border-b border-sky-midnight pb-3">
+                <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-gold flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-sky-gold animate-pulse" />
+                  What-If Simulation
+                </h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-xs font-sans text-sky-grey">
+                  <span>Reduce Buyer Concentration by:</span>
+                  <span className="text-sky-cream font-bold text-sm">{reductionPct}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={reductionPct}
+                  onChange={(e) => setReductionPct(Number(e.target.value))}
+                  className="w-full h-1.5 bg-sky-dark rounded-lg appearance-none cursor-pointer accent-sky-gold border border-sky-midnight"
+                />
+                <div className="text-[10px] font-sans text-sky-grey leading-relaxed bg-sky-dark/40 p-3 rounded-lg border border-sky-midnight/55 space-y-1">
+                  <p>
+                    <strong>Hypothetical value:</strong> {msmeData ? (msmeData.top_buyer_concentration_pct * (1 - reductionPct / 100) * 100).toFixed(1) : 0}% of revenue from top buyer (Base: {msmeData ? (msmeData.top_buyer_concentration_pct * 100).toFixed(1) : 0}%).
+                  </p>
+                  <p className="text-sky-gold font-medium">
+                    * Adjusting the slider will update the simulated preview countdown badge below the main dial. No database changes are saved.
+                  </p>
+                </div>
               </div>
             </div>
           </section>

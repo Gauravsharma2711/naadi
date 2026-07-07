@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probability }) {
+export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probability, simulatedDays = null }) {
   // Safe bounds check
   const safeMaxDays = maxDays > 0 ? maxDays : 90;
   const safeDaysRemaining = Math.max(0, Math.min(daysRemaining, safeMaxDays));
@@ -53,7 +53,7 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
   }, [safeDaysRemaining]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-sky-card rounded-2xl border border-sky-midnight shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden h-[330px] w-full z-10">
+    <div className="flex flex-col items-center justify-center p-6 bg-sky-card rounded-2xl border border-sky-midnight shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden h-[340px] w-full z-10">
       
       {/* Soft circular halo glow representing growth vitality */}
       <div 
@@ -125,8 +125,21 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
           <span className="text-[9px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-1">
             {safeDaysRemaining <= 0 ? "You're Loan-Ready!" : "until ready"}
           </span>
+          <span className="text-[9px] font-sans text-sky-grey/75 mt-1 block">
+            Based on 6 months of data.
+          </span>
         </div>
       </div>
+
+      {/* Simulated Preview Badge */}
+      {simulatedDays !== null && (
+        <div className="mt-3 flex items-center gap-1.5 bg-sky-sunset/15 px-3 py-1 rounded-full border border-sky-gold/35 relative z-10 shadow-sm animate-pulse">
+          <span className="h-1.5 w-1.5 rounded-full bg-sky-gold" />
+          <span className="text-[9px] font-display text-sky-gold font-bold uppercase tracking-wider">
+            Simulated Preview: <strong className="text-sky-cream font-extrabold">{simulatedDays} Days</strong>
+          </span>
+        </div>
+      )}
 
       {/* Probability Badge */}
       <div className="mt-4 flex items-center gap-1.5 bg-sky-dark px-4 py-1.5 rounded-full border border-sky-midnight relative z-10 shadow-sm">
@@ -138,6 +151,25 @@ export default function CountdownDial({ daysRemaining = 47, maxDays = 90, probab
           {stageName}
         </span>
       </div>
+
+      {/* Dynamic Peer Benchmark Disclaimer */}
+      {(() => {
+        const BENCHMARK = 62;
+        const diff = BENCHMARK - safeDaysRemaining;
+        let comparisonText = "";
+        if (diff > 0) {
+          comparisonText = `you're ahead by ${diff} days.`;
+        } else if (diff < 0) {
+          comparisonText = `you're behind by ${Math.abs(diff)} days.`;
+        } else {
+          comparisonText = "you're on par with average.";
+        }
+        return (
+          <p className="text-[10px] font-sans text-sky-grey/70 mt-3 text-center leading-relaxed max-w-[260px] z-10">
+            MSMEs in your sector average {BENCHMARK} days — {comparisonText}
+          </p>
+        );
+      })()}
       
     </div>
   );

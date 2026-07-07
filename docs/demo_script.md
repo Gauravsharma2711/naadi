@@ -28,36 +28,41 @@ This is the spoken script for the presentation. Practicing with these timestamps
 
 ---
 
-## 4. Live Walkthrough: Demo MSME A (1:10 - 3:10) — [2 Minutes]
+## 4. Live Walkthrough: Demo MSME A (1:10 - 2:30) — [1 Minute 20 Seconds]
 
 **What to do**: Click and interact with the UI live in the browser using profile ID `demo-msme-a`.
 
-*   **1:10 (Onboarding)**: 
-    > *"Let’s see it in action. We are on the Din Onboarding page. We select our first scenario, **Demo MSME A**. We connect their live financial accounts: GST filings, UPI settlement logs, bank statements via Account Aggregator, and EPFO payroll records. As we click 'Link' on each ledger, they verify and link in real time. Now, we tap 'See My Countdown'..."*
+*   **1:10 (Onboarding & Link)**: 
+    > *"Let’s see it in action. We select **Demo MSME A** on our Onboarding screen. We connect their live financial ledgers: GST filings, UPI settlement logs, bank statements via Account Aggregator, and EPFO payroll records. Now, we tap 'See My Countdown'..."*
 
-*   **1:30 (Initial Dashboard)**: 
-    > *"[Transition to Dashboard] Here is the Din Dashboard. At the center is our signature visual: the **Leaf Growth Ring Dial**. Inspired by tree growth rings, it represents a business growing towards maturity. The dial is currently in the **Seedling stage**, showing exactly **47 days until credit-ready**, with an underwriting approval probability of **57.7%**."*
+*   **1:25 (Initial Dashboard)**: 
+    > *"[Transition to Dashboard] Here is the Din Dashboard. At the center is the **Leaf Growth Ring Dial**, representing credit maturity. The dial is currently in the **Seedling stage**, showing **47 days until ready**, with an approval probability of **57.7%**. Based on 6 months of ledger data."*
 
-*   **1:50 (Action Board - Action 1)**: 
-    > *"How does this business shorten their wait? We look at the **Action Board**. Din has analyzed their ledgers and recommended 3 actions, ranked by impact. The top recommendation is: **File GST returns on time for the next 3 consecutive months**, which saves 20 days. Let’s tap 'Complete' live... [Click Complete] ...and watch the dial. The Leaf Ring expands clockwise, and the countdown instantly ticks down from **47 to 27 days**!"*
+*   **1:40 (Action Board - Speedrun)**: 
+    > *"To shorten this wait, we look at the **Action Board**. Din has analyzed their ledgers and ranked recovery actions. Tapping 'Complete' on the GST recommendation... [Click Complete] ...and the countdown instantly ticks down from **47 to 27 days**! Tapping the UPI action... [Click Complete] ...shrinks it further to **12 days remaining**. The visual rings expand, and the probability badge leaps to **87.7%** in the Blooming stage."*
 
-*   **2:20 (Action Board - Action 2)**: 
-    > *"Next, the system suggests routing more customer invoicing through UPI to improve sales momentum, saving 15 days. Tapping 'Complete'... [Click Complete] ...and the countdown dial updates smoothly again, stopping at **12 days remaining**. Notice the Probability Badge has jumped to **87.7%**, and our Growth Ring is now in the **Blooming stage**."*
-
-*   **2:40 (SHAP score explanation)**: 
-    > *"If the business owner asks, 'Why this score?', they scroll down to the **Score Breakdown**. Din translates complex machine learning outputs into plain language. It lists constraints 'Holding You Back'—like cashflow volatility—and strengths 'Working For You'—like a perfect 100% consistent EPFO payroll history. It acts as an automated financial coach, demystifying underwriting."*
+*   **2:10 (SHAP Score Explanation)**: 
+    > *"If the business owner asks, 'Why this score?', they scroll down to the **Score Breakdown**. Din translates complex machine learning outputs into plain language. It displays constraints holding them back—like cashflow volatility—and strengths working for them—like EPFO payroll history."*
 
 ---
 
-## 5. The Wow Reveal: Demo MSME B (3:10 - 3:50) — [40 Seconds]
+## 5. The Wow Reveal: Demo MSME B (2:30 - 3:10) — [40 Seconds]
 
-**What to do**: Click the back button and select `demo-msme-b`.
+**What to do**: Click the back button, select `demo-msme-b` on onboarding, and load the Ready state.
 
-> *"But what does the final destination look like? Let’s go back and load **Demo MSME B**—a business that has maintained healthy cash flows and perfect compliance. Tapping 'See My Countdown'... [Click B] ...and MSME B loads instantly at **0 days remaining**! The Leaf Growth Ring is a thick, solid Forest Green, showing full credit maturity. The probability is at **98%**, and the dashboard displays a prominent success banner: **Your Business is Credit-Ready!** They can now apply for funding and get approved instantly."*
+> *"What is the final destination? Let’s load **Demo MSME B**. Tapping 'See My Countdown'... [Click B] ...and MSME B loads instantly at **0 days remaining**! The Leaf Growth Ring is a solid Forest Green, showing full credit maturity. The dashboard displays a pre-approved loan offer: a limit of ₹10 Lakhs at 11.5% APR. The business owner can now tap **Download Report**... [Click Download Report] ...which instantly serves a secure, S3-hosted PDF credit health report, ready for bank submission."*
 
 ---
 
-## 6. Under the Hood: The AI Engine (3:50 - 4:20) — [30 Seconds]
+## 6. Contrast View: The AI is Not Fooled (3:10 - 3:50) — [40 Seconds]
+
+**What to do**: Click back to Onboarding, then click the floating "Compare Models" button on the bottom right.
+
+> *"How does our model handle complex, realistic cases? Let's open our **Compare View** to view **Demo C** and **Demo F** side-by-side. On the surface, both look similar because they have volatile monthly bank statements. However, the model isn't fooled. It scores Demo C at **133 days** due to compounding risks: poor GST compliance and high buyer concentration. Meanwhile, Demo F is recognized as just a seasonal business with low buyer concentration and solid payroll records, scored at just **32 days**. Dynamic AI underwriting separates seasonal variance from genuine default risk."*
+
+---
+
+## 7. Under the Hood: The AI Engine (3:50 - 4:20) — [30 Seconds]
 
 **What to do**: Show the technical/model slide or reference the explainability pipeline.
 
@@ -65,16 +70,8 @@ This is the spoken script for the presentation. Practicing with these timestamps
 
 ---
 
-## 7. Business & Social Impact (4:20 - 4:50) — [30 Seconds]
+## 8. Impact & Closing (4:20 - 5:00) — [40 Seconds]
 
-**What to do**: Present the impact slide.
+**What to do**: Present the impact slide, smile, and deliver the final line.
 
-> *"For lenders, Din replaces slow, manual credit audits with secure, automated, data-driven underwriting—reducing customer acquisition costs and minimizing NPAs. For MSMEs, it provides credit transparency and a clear roadmap, transforming millions of New-to-Credit enterprises from 'unbankable' risks into viable, high-quality borrowing profiles."*
-
----
-
-## 8. Closing Line (4:50 - 5:00) — [10 Seconds]
-
-**What to do**: Smile, pause, and deliver the final line.
-
-> *"With Din, credit eligibility is no longer a mystery—it’s just a countdown. Thank you."*
+> *"For lenders, Din replaces slow, manual credit audits with secure, automated, data-driven underwriting—reducing customer acquisition costs and minimizing NPAs. For MSMEs, it provides credit transparency and a clear roadmap, transforming millions of New-to-Credit enterprises from 'unbankable' risks into viable, high-quality borrowing profiles. With Din, credit eligibility is no longer a mystery—it’s just a countdown. Thank you."*

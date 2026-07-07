@@ -1,8 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import AmbientBackground from "../components/AmbientBackground";
 import CountdownDial from "../components/CountdownDial";
 import ScoreBreakdown from "../components/ScoreBreakdown";
+import { getMsmeReport } from "../services/api";
+
+function DownloadReportButton({ msmeId }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const result = await getMsmeReport(msmeId);
+      if (result && result.report_url) {
+        window.open(result.report_url, "_blank");
+      } else {
+        alert("Could not generate report URL");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to download report: " + err.message);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={downloading}
+      className="w-full py-3 border border-sky-gold hover:bg-sky-sunset/15 text-sky-gold hover:text-[#00b056] font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 rounded-xl mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {downloading ? (
+        <>
+          <svg className="animate-spin h-4 w-4 text-sky-gold" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Generating Report...
+        </>
+      ) : (
+        <>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download Report
+        </>
+      )}
+    </button>
+  );
+}
 
 export default function ReadyState({ msmeId, onBack, probability, shapBreakdown, msmeData }) {
   const handleApply = () => {
@@ -113,6 +160,9 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
               >
                 Apply Now
               </button>
+
+              {/* Download Report Button (Secondary/Ghost style from DESIGN_SYSTEM.md) */}
+              <DownloadReportButton msmeId={msmeId} />
             </motion.div>
           </section>
 

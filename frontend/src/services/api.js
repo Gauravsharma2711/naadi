@@ -51,3 +51,35 @@ export async function completeAction(msmeId, actionId) {
   
   return response.json();
 }
+
+/**
+ * Generates and fetches the S3 presigned URL for the MSME credit health PDF report.
+ * GET /msme/{msme_id}/report
+ */
+export async function getMsmeReport(msmeId) {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/report`);
+  if (!response.ok) {
+    throw new Error(`Failed to generate credit report for MSME ${msmeId}`);
+  }
+  return response.json();
+}
+
+/**
+ * Simulates a hypothetical score by providing custom, non-persistent features.
+ * POST /msme/{msme_id}/simulate
+ */
+export async function simulateScore(msmeId, simulatedFeatures) {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/simulate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ features: simulatedFeatures }),
+  });
+  
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Simulation failed: ${errText || response.statusText}`);
+  }
+  
+  return response.json();
+}
+

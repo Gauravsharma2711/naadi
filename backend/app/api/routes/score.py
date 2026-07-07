@@ -67,3 +67,34 @@ def get_msme_score(msme_id: str):
             "payroll_consistency_score": msme_data["payroll_consistency_score"]
         }
     }
+
+@router.post("/msme/{msme_id}/simulate")
+def simulate_msme_score(msme_id: str, payload: dict):
+    """
+    Simulates the days remaining using adjusted feature values without modifying the database.
+    """
+    msme_data = get_msme(msme_id)
+    if not msme_data:
+        raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
+        
+    features = {
+        'filing_on_time_rate': msme_data['filing_on_time_rate'],
+        'upi_trend_slope': msme_data['upi_trend_slope'],
+        'cashflow_volatility_score': msme_data['cashflow_volatility_score'],
+        'top_buyer_concentration_pct': msme_data['top_buyer_concentration_pct'],
+        'payroll_consistency_score': msme_data['payroll_consistency_score']
+    }
+    
+    # Overwrite features with simulated values from payload
+    simulated_overrides = payload.get("features", {})
+    for k, v in simulated_overrides.items():
+        if k in features:
+            features[k] = float(v)
+            
+    calibration = calculate_days_to_ready(features, msme_id=msme_id)
+    
+    return {
+        "days_remaining": calibration["days_to_ready"],
+        "current_probability": calibration["credit_readiness_probability"]
+    }
+

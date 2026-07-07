@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.score import router as score_router
 from app.api.routes.actions import router as actions_router
 from app.api.routes.msme import router as msme_router
+from app.api.routes.report import router as report_router
 
 app = FastAPI(title="Naadi (Din) API")
 
@@ -19,6 +20,7 @@ app.add_middleware(
 app.include_router(score_router)
 app.include_router(actions_router)
 app.include_router(msme_router)
+app.include_router(report_router)
 
 @app.get("/health")
 def health_check():

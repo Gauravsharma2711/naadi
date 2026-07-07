@@ -7,3 +7,5 @@ pandas
 faker
 sqlalchemy
 python-dotenv
+boto3
+reportlab
