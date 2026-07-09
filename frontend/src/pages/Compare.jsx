@@ -83,7 +83,7 @@ export default function Compare({ onBack }) {
   }
 
   return (
-    <div className="min-h-screen bg-sky-dark px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground />
 
       <div className="w-full max-w-6xl mx-auto relative z-10 space-y-6">

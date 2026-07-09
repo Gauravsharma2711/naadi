@@ -26,10 +26,13 @@ function DownloadReportButton({ msmeId }) {
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleDownload}
       disabled={downloading}
-      className="w-full py-3 border border-sky-gold hover:bg-sky-sunset/15 text-sky-gold hover:text-[#00b056] font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 rounded-xl mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      whileHover={!downloading ? { scale: 1.02, backgroundColor: "rgba(184,232,200,0.15)" } : {}}
+      whileTap={!downloading ? { scale: 0.98 } : {}}
+      transition={{ duration: 0.2 }}
+      className="w-full py-3 border border-sky-gold text-sky-gold hover:text-[#00b056] font-sans font-bold text-xs uppercase tracking-widest transition-all duration-300 rounded-xl mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {downloading ? (
         <>
@@ -47,7 +50,7 @@ function DownloadReportButton({ msmeId }) {
           Download Report
         </>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -57,7 +60,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
   };
 
   return (
-    <div className="min-h-screen bg-sky-dark px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
       {/* Ambient background with leaf/growth-ring drift animations */}
       <AmbientBackground />
 
@@ -154,12 +157,15 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
                 </div>
               </div>
 
-              <button
+              <motion.button
                 onClick={handleApply}
-                className="w-full py-3.5 bg-sky-gold hover:bg-[#00b056] text-white rounded-xl font-display font-extrabold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_8px_20px_rgba(0,214,107,0.15)] hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,214,107,0.22)]"
+                whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="w-full py-3.5 bg-sky-gold hover:bg-[#00b056] text-white rounded-xl font-sans font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_8px_20px_rgba(0,214,107,0.15)]"
               >
                 Apply Now
-              </button>
+              </motion.button>
 
               {/* Download Report Button (Secondary/Ghost style from DESIGN_SYSTEM.md) */}
               <DownloadReportButton msmeId={msmeId} />

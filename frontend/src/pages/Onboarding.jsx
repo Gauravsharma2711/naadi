@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { connectMsme } from "../services/api";
+import { connectMsme, getMsmeScore } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
 
 export default function Onboarding({ onSelectMsme }) {
   const [step, setStep] = useState(1); // 1 = Enter ID, 2 = Connect Sources
   const [msmeIdInput, setMsmeIdInput] = useState("");
   const [inputError, setInputError] = useState("");
+  const [msmeData, setMsmeData] = useState(null);
+  const [loadingData, setLoadingData] = useState(false);
 
   // Connection flow state
   const [connecting, setConnecting] = useState(false); // True while POST is in flight
@@ -21,9 +23,42 @@ export default function Onboarding({ onSelectMsme }) {
 
   const ALL_SOURCES = ["gst", "upi", "bank", "epfo"];
 
-  const handleNextStep = (e) => {
+  const getPreFilledData = (key) => {
+    if (!msmeData) return "No data available";
+    switch (key) {
+      case "gst": {
+        const rate = msmeData.filing_on_time_rate;
+        const pct = (rate * 100).toFixed(1);
+        return `${pct}% On-Time Filing Rate`;
+      }
+      case "upi": {
+        const slope = msmeData.upi_trend_slope;
+        const sign = slope >= 0 ? "+" : "";
+        const pct = (slope * 100).toFixed(1);
+        return `${sign}${pct}% MoM Settlement Trend`;
+      }
+      case "bank": {
+        const vol = msmeData.cashflow_volatility_score;
+        const level = vol <= 0.1 ? "Low" : vol <= 0.3 ? "Moderate" : "High";
+        return `Volatility Index: ${vol.toFixed(3)} (${level})`;
+      }
+      case "epfo": {
+        if (!msmeData.has_employees) {
+          return "No employees on record";
+        }
+        const consistency = msmeData.payroll_consistency_score;
+        const pct = (consistency * 100).toFixed(1);
+        return `Payroll Consistency: ${pct}%`;
+      }
+      default:
+        return "Not available";
+    }
+  };
+
+  const handleNextStep = async (e) => {
     e.preventDefault();
-    if (!msmeIdInput.trim()) {
+    const id = msmeIdInput.trim();
+    if (!id) {
       setInputError("Please enter a valid MSME Business ID");
       return;
     }
@@ -31,16 +66,36 @@ export default function Onboarding({ onSelectMsme }) {
     setConnectError("");
     setConnectedData(null);
     setSourcesLinked({ gst: false, upi: false, bank: false, epfo: false });
-    setStep(2);
+    setLoadingData(true);
+    try {
+      const data = await getMsmeScore(id);
+      setMsmeData(data.msme_data);
+      setStep(2);
+    } catch (err) {
+      console.error(err);
+      setInputError("No business found with this ID. Check that the backend is running.");
+    } finally {
+      setLoadingData(false);
+    }
   };
 
-  const handleDemoSelect = (id) => {
+  const handleDemoSelect = async (id) => {
     setMsmeIdInput(id);
     setInputError("");
     setConnectError("");
     setConnectedData(null);
     setSourcesLinked({ gst: false, upi: false, bank: false, epfo: false });
-    setStep(2);
+    setLoadingData(true);
+    try {
+      const data = await getMsmeScore(id);
+      setMsmeData(data.msme_data);
+      setStep(2);
+    } catch (err) {
+      console.error(err);
+      setInputError("Failed to fetch demo scenario. Check that the backend is running.");
+    } finally {
+      setLoadingData(false);
+    }
   };
 
   /**
@@ -91,7 +146,7 @@ export default function Onboarding({ onSelectMsme }) {
   ];
 
   return (
-    <div className="min-h-screen bg-sky-dark flex flex-col justify-center items-center px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent flex flex-col justify-center items-center px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground daysRemaining={47} />
       
       {step === 2 && (
@@ -113,148 +168,247 @@ export default function Onboarding({ onSelectMsme }) {
           /* Step 1: Enter Business ID Card */
           <motion.div
             key="step1"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            whileHover={{ y: -2 }}
+            exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="w-full max-w-md bg-sky-card border border-sky-midnight p-8 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-300 relative z-10"
+            className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center z-10 relative px-4"
           >
-            <div className="space-y-6">
-              <div className="text-center">
-                <h1 className="text-3xl font-display uppercase tracking-widest font-extrabold text-sky-cream flex justify-center items-baseline gap-1">
-                  Din <span className="text-[10px] font-display font-bold text-sky-gold uppercase tracking-widest bg-sky-sunset border border-sky-gold/15 px-2 py-0.5 rounded ml-2">Naadi</span>
+            {/* Left Column: Headline & Visual Phone Illustration (7 / 12 cols on desktop) */}
+            <div className="lg:col-span-7 space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left mt-8 lg:mt-0">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 bg-sky-sunset/45 border border-sky-gold/15 px-3 py-1 rounded-full text-[10px] font-display font-bold text-sky-gold tracking-widest uppercase select-none">
+                  🌱 IDBI Bank National Hackathon 2026
+                </div>
+                <h1 className="text-4xl sm:text-5xl font-display font-extrabold text-sky-cream tracking-tight leading-[1.1] max-w-lg">
+                  Grow towards <br/>
+                  <span className="text-sky-gold">credit-readiness</span>
                 </h1>
-                <p className="text-xs font-sans text-sky-grey mt-4 leading-relaxed">
-                  Calculate your "Days until Loan-Ready" countdown and discover ranked actions to get funding faster.
+                <p className="text-sm font-sans text-sky-grey leading-relaxed max-w-md">
+                  Din measures your real-time approval countdown using institutional models, and ranks the exact operational tasks you need to complete.
                 </p>
               </div>
 
-              <form onSubmit={handleNextStep} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-display font-semibold text-sky-grey uppercase tracking-widest mb-2">
-                    Enter MSME Business ID
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={msmeIdInput}
-                      onChange={(e) => setMsmeIdInput(e.target.value)}
-                      placeholder="e.g. demo-msme-a"
-                      className="flex-1 bg-white border border-sky-midnight rounded-xl px-5 py-3 font-display text-sky-cream placeholder-sky-grey/50 focus:outline-none focus:border-sky-gold transition-all duration-300 text-sm shadow-sm"
-                    />
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.2 }}
-                      className="bg-sky-gold hover:bg-[#00b056] text-white px-6 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-colors duration-300 shadow-sm"
-                    >
-                      Next
-                    </motion.button>
-                  </div>
-                  {inputError && (
-                    <span className="text-xs text-sky-crimson font-medium block mt-1.5 pl-1">{inputError}</span>
-                  )}
+              {/* Visual phone mockup and growth rings illustration */}
+              <div className="relative w-72 h-[26rem] select-none scale-90 sm:scale-100 mt-2">
+                {/* Scattered overlapping growth rings and leaves behind the phone */}
+                <div className="absolute -top-10 -left-12 w-28 h-28 text-sky-sunset opacity-40 animate-pulse pointer-events-none">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                    <circle cx="50" cy="50" r="40" strokeWidth="2" strokeDasharray="3 5" />
+                    <circle cx="50" cy="50" r="28" strokeWidth="1.5" />
+                  </svg>
                 </div>
-              </form>
+                <div className="absolute -bottom-8 -right-10 w-24 h-24 text-sky-gold opacity-25 pointer-events-none">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                    <path d="M50 10 C25 35, 25 65, 50 90 C75 65, 75 35, 50 10 Z" strokeWidth="2" fill="currentColor" fillOpacity="0.08" />
+                  </svg>
+                </div>
+                <div className="absolute top-1/2 -right-16 w-16 h-16 text-sky-sunset opacity-35 pointer-events-none">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                    <circle cx="50" cy="50" r="40" strokeWidth="2.5" strokeDasharray="2 4" />
+                  </svg>
+                </div>
 
-              {/* Separator */}
-              <div className="flex items-center my-8 text-[10px] font-display text-sky-grey/50 uppercase tracking-widest">
-                <div className="flex-1 h-[1px] bg-sky-midnight" />
-                <span className="px-3">Or choose a demo scenario</span>
-                <div className="flex-1 h-[1px] bg-sky-midnight" />
+                {/* Sleek smartphone chassis mockup */}
+                <div className="absolute inset-0 bg-[#001E2B] rounded-[36px] p-2.5 shadow-[0_20px_50px_rgba(0,30,43,0.15)] border-2 border-sky-midnight/20 flex flex-col overflow-hidden">
+                  {/* Phone Screen Container */}
+                  <div className="flex-1 bg-[#FBFBFA] rounded-[28px] overflow-hidden flex flex-col p-4 relative">
+                    {/* Top Speaker Notch */}
+                    <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-16 h-3 bg-[#001E2B] rounded-full z-20" />
+                    
+                    {/* Mini Screen App Mockup Header */}
+                    <div className="flex justify-between items-baseline border-b border-sky-midnight pb-2 mt-2 select-none">
+                      <span className="text-[7px] font-display tracking-widest font-extrabold text-sky-cream uppercase">DIN</span>
+                      <span className="text-[6px] font-display font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded-full border bg-sky-sunset text-sky-gold border-sky-gold/20">Live</span>
+                    </div>
+
+                    {/* Mini Countdown Ring dial */}
+                    <div className="my-auto flex flex-col items-center select-none py-2">
+                      <div className="relative w-32 h-32 flex items-center justify-center">
+                        {/* Dial circular progress tracks */}
+                        <svg className="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="40" stroke="#B8E8C8" strokeWidth="7" fill="none" strokeDasharray="180 360" strokeLinecap="round" />
+                          <circle cx="50" cy="50" r="40" stroke="#00D66B" strokeWidth="7" fill="none" strokeDasharray="120 360" strokeLinecap="round" />
+                        </svg>
+                        <div className="text-center z-10 flex flex-col items-center">
+                          <span className="text-3xl font-display font-extrabold text-sky-cream tracking-tighter">47</span>
+                          <span className="text-[6px] font-display font-bold text-sky-grey uppercase tracking-wider -mt-1">DAYS TO READY</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-center">
+                        <span className="text-[8px] font-sans text-sky-grey font-medium">Readiness Probability: </span>
+                        <span className="text-[8px] font-display font-bold text-sky-gold">68.3%</span>
+                      </div>
+                    </div>
+
+                    {/* Mini Action Card List Mock */}
+                    <div className="space-y-1.5 mt-auto">
+                      <div className="p-2 bg-white border border-sky-midnight rounded-lg shadow-sm flex justify-between items-center gap-1.5">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[6px] font-display font-extrabold text-sky-cream block uppercase tracking-wider truncate">Link EPFO records</span>
+                          <span className="text-[5px] font-sans text-sky-grey block truncate">Verify payroll consistency</span>
+                        </div>
+                        <span className="text-[7px] font-display font-bold text-sky-gold shrink-0">-22 days</span>
+                      </div>
+                      <div className="p-2 bg-white border border-sky-midnight rounded-lg shadow-sm flex justify-between items-center gap-1.5 opacity-60">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[6px] font-display font-extrabold text-sky-cream block uppercase tracking-wider truncate line-through">GST on-time filings</span>
+                          <span className="text-[5px] font-sans text-sky-grey block truncate">Clean filing history verified</span>
+                        </div>
+                        <span className="text-[5px] font-display font-bold text-sky-grey shrink-0 uppercase">Done</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              {/* Demo scenarios */}
-              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sky-midnight">
-                {/* Scenario A */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-a")}
-                  whileHover={{ y: -1.5, borderColor: "#D64545" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo A: Mid-Journey (47 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">3 actions remaining. Balanced risk profile.</p>
+            {/* Right Column: The Form Card (5 / 12 cols on desktop) */}
+            <div className="lg:col-span-5 flex justify-center w-full">
+              <div className="w-full max-w-md bg-sky-card border border-sky-midnight p-6 sm:p-8 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,104,74,0.03)] transition-all duration-300 relative">
+                <div className="space-y-6">
+                  {/* Small Brand Logo inside the card */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-display tracking-widest font-extrabold text-sky-cream">DIN</span>
+                    <span className="text-[8px] font-display font-bold text-sky-gold uppercase tracking-wider bg-sky-sunset border border-sky-gold/15 px-2 py-0.5 rounded">NAADI</span>
                   </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo A</div>
-                </motion.div>
 
-                {/* Scenario B */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-b")}
-                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo B: Ready / Pre-Approved (0 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Excellent compliance. Pre-approved loan offer active.</p>
+                  <form onSubmit={handleNextStep} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-display font-semibold text-sky-grey uppercase tracking-widest mb-2">
+                        Enter MSME Business ID
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={msmeIdInput}
+                          onChange={(e) => setMsmeIdInput(e.target.value)}
+                          placeholder="e.g. demo-msme-a"
+                          disabled={loadingData}
+                          className="flex-1 bg-white border border-sky-midnight rounded-xl px-4 py-3 font-sans text-sky-cream placeholder-sky-grey/50 focus:outline-none focus:border-sky-gold focus:ring-2 focus:ring-sky-gold/15 transition-all duration-300 text-sm shadow-sm"
+                        />
+                        <motion.button
+                          type="submit"
+                          disabled={loadingData}
+                          whileHover={!loadingData ? { scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" } : {}}
+                          whileTap={!loadingData ? { scale: 0.98 } : {}}
+                          transition={{ duration: 0.2 }}
+                          className="bg-sky-gold hover:bg-[#00b056] text-white px-6 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-colors duration-300 shadow-sm flex items-center justify-center min-w-[80px]"
+                        >
+                          {loadingData ? (
+                            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            "Next"
+                          )}
+                        </motion.button>
+                      </div>
+                      {inputError && (
+                        <span className="text-xs text-sky-crimson font-medium block mt-1.5 pl-1">{inputError}</span>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Separator */}
+                  <div className="flex items-center my-6 text-[9px] font-display text-sky-grey/40 uppercase tracking-widest font-semibold">
+                    <div className="flex-1 h-[1px] bg-sky-midnight/70" />
+                    <span className="px-3">Or choose a demo scenario</span>
+                    <div className="flex-1 h-[1px] bg-sky-midnight/70" />
                   </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo B</div>
-                </motion.div>
 
-                {/* Scenario C */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-c")}
-                  whileHover={{ y: -1.5, borderColor: "#D64545" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo C: Compound Risk (133 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Poor GST filing history & high buyer concentration risk.</p>
+                  {/* Demo scenarios */}
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sky-midnight">
+                    {/* Scenario A */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-a")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#D64545", boxShadow: "0 4px 12px rgba(214,69,69,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo A: Mid-Journey (47 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">3 actions remaining. Balanced risk profile.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo A</div>
+                    </motion.div>
+
+                    {/* Scenario B */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-b")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#00D66B", boxShadow: "0 4px 12px rgba(0,214,107,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo B: Ready / Pre-Approved (0 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Excellent compliance. Pre-approved loan offer active.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo B</div>
+                    </motion.div>
+
+                    {/* Scenario C */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-c")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#D64545", boxShadow: "0 4px 12px rgba(214,69,69,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-crimson transition-colors">Demo C: Compound Risk (133 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Poor GST filing history & high buyer concentration risk.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo C</div>
+                    </motion.div>
+
+                    {/* Scenario D */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-d")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#00D66B", boxShadow: "0 4px 12px rgba(0,214,107,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo D: Close to Ready (12 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">No employees (no EPFO data). Needs 1 concentration fix.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo D</div>
+                    </motion.div>
+
+                    {/* Scenario E */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-e")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#00D66B", boxShadow: "0 4px 12px rgba(0,214,107,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo E: One Blocker (8 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Perfect filing/stability. 1 concentration blocker.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo E</div>
+                    </motion.div>
+
+                    {/* Scenario F */}
+                    <motion.div
+                      onClick={() => !loadingData && handleDemoSelect("demo-msme-f")}
+                      whileHover={!loadingData ? { y: -1.5, borderColor: "#00D66B", boxShadow: "0 4px 12px rgba(0,214,107,0.06)" } : {}}
+                      whileTap={!loadingData ? { scale: 0.99 } : {}}
+                      className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
+                    >
+                      <div className="pr-2 text-left">
+                        <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo F: Seasonal Business (32 Days)</h4>
+                        <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">High volatility cashflow but solid underlying business.</p>
+                      </div>
+                      <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo F</div>
+                    </motion.div>
                   </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-crimson bg-sky-crimson/10 border border-sky-crimson/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo C</div>
-                </motion.div>
 
-                {/* Scenario D */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-d")}
-                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo D: Close to Ready (12 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">No employees (no EPFO data). Needs 1 concentration fix.</p>
+                  <div className="text-center mt-6 text-[9px] font-display text-sky-grey/70 uppercase tracking-widest font-semibold">
+                    IDBI Bank National Hackathon 2026 • AI-Powered MSME Card
                   </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo D</div>
-                </motion.div>
-
-                {/* Scenario E */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-e")}
-                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo E: One Blocker (8 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">Perfect filing/stability. 1 concentration blocker.</p>
-                  </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo E</div>
-                </motion.div>
-
-                {/* Scenario F */}
-                <motion.div
-                  onClick={() => handleDemoSelect("demo-msme-f")}
-                  whileHover={{ y: -1.5, borderColor: "#00D66B" }}
-                  whileTap={{ scale: 0.99 }}
-                  className="p-3 bg-white border border-sky-midnight rounded-xl flex justify-between items-center cursor-pointer transition-all duration-300 group"
-                >
-                  <div className="pr-2">
-                    <h4 className="text-xs font-display font-bold text-sky-cream group-hover:text-sky-gold transition-colors">Demo F: Seasonal Business (32 Days)</h4>
-                    <p className="text-[10px] font-sans text-sky-grey leading-tight mt-0.5">High volatility cashflow but solid underlying business.</p>
-                  </div>
-                  <div className="text-[8px] uppercase font-bold text-sky-gold bg-sky-sunset border border-sky-gold/20 px-2 py-0.5 rounded-full tracking-wider shrink-0">Demo F</div>
-                </motion.div>
-              </div>
-
-              <div className="text-center mt-8 text-[9px] font-display text-sky-grey/70 uppercase tracking-widest font-semibold">
-                IDBI Bank National Hackathon 2026 • AI-Powered MSME Card
+                </div>
               </div>
             </div>
           </motion.div>
@@ -288,7 +442,7 @@ export default function Onboarding({ onSelectMsme }) {
                     key={src.key}
                     whileHover={!isLinked ? { y: -4, scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" } : {}}
                     transition={{ duration: 0.2 }}
-                    className={`p-6 bg-sky-card border border-sky-midnight rounded-2xl flex flex-col justify-between h-64 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden`}
+                    className={`p-6 bg-sky-card border border-sky-midnight rounded-2xl flex flex-col justify-between h-auto min-h-[20rem] pb-6 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] relative overflow-hidden`}
                   >
                     {/* Top indicator bar */}
                     <div className={`absolute top-0 left-0 right-0 h-1 transition-all ${isLinked ? 'bg-sky-gold' : 'bg-transparent'}`} />
@@ -304,11 +458,23 @@ export default function Onboarding({ onSelectMsme }) {
                       <p className="text-[11px] font-sans text-sky-grey leading-relaxed">
                         {src.desc}
                       </p>
+
+                      {/* Pre-filled data box */}
+                      <div className="mt-3.5 p-2.5 bg-sky-dark/50 border border-sky-midnight rounded-xl text-[11px] font-sans text-sky-grey select-none pointer-events-none flex flex-col gap-0.5">
+                        <span className="text-[8px] font-display font-extrabold uppercase tracking-widest text-sky-gold">
+                          Pre-filled Metric
+                        </span>
+                        <div className="font-semibold text-sky-cream truncate">
+                          {getPreFilledData(src.key)}
+                        </div>
+                      </div>
                     </div>
 
-                    <button
+                    <motion.button
                       onClick={() => handleLinkSource(src.key)}
                       disabled={isLinked || isLinking}
+                      whileHover={!isLinked && !isLinking ? { scale: 1.02 } : {}}
+                      whileTap={!isLinked && !isLinking ? { scale: 0.98 } : {}}
                       className={`w-full py-2.5 rounded-xl font-display font-extrabold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 ${
                         isLinked
                           ? "bg-sky-sunset text-sky-gold border border-sky-gold/10"
@@ -329,7 +495,7 @@ export default function Onboarding({ onSelectMsme }) {
                       ) : (
                         "Connect"
                       )}
-                    </button>
+                    </motion.button>
                   </motion.div>
                 );
               })}

@@ -1,4 +1,6 @@
 import React from "react";
+import { motion } from "framer-motion";
+import AmbientBackground from "../components/AmbientBackground";
 
 export default function StyleGuide({ onBack }) {
   const fonts = [
@@ -47,14 +49,8 @@ export default function StyleGuide({ onBack }) {
   ];
 
   return (
-    <div className="min-h-screen bg-sky-dark p-8 text-sky-cream font-sans select-none relative overflow-hidden">
-      
-      {/* Decorative Light Green Halos */}
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-sky-gold/5 blur-[100px] -top-20 -left-20 pointer-events-none" />
-      <div className="absolute w-[600px] h-[600px] rounded-full bg-sky-sunset/30 blur-[120px] -bottom-20 -right-20 pointer-events-none" />
-
-      {/* Grid Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#E2E8E5_1px,transparent_1px),linear-gradient(to_bottom,#E2E8E5_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none" />
+    <div className="min-h-screen bg-transparent p-8 text-sky-cream font-sans select-none relative overflow-hidden">
+      <AmbientBackground />
 
       <div className="w-full max-w-4xl mx-auto space-y-12 relative z-10">
         
@@ -68,12 +64,15 @@ export default function StyleGuide({ onBack }) {
               MongoDB-Inspired Light Sprout Theme
             </p>
           </div>
-          <button
+          <motion.button
             onClick={onBack}
-            className="bg-sky-gold hover:bg-[#00523A] text-white px-5 py-2.5 rounded-full font-display font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-sm"
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0,214,107,0.15)" }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+            className="bg-sky-gold hover:bg-[#00b056] text-white px-5 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-sm"
           >
             Back to App
-          </button>
+          </motion.button>
         </header>
 
         {/* Colors Section */}
