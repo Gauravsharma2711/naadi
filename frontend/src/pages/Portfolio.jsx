@@ -4,18 +4,19 @@ import { getMsmeScore } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
 
 const DEMO_MSMES = [
-  { id: "demo-msme-a", name: "Retail Dynamics (A)", desc: "Mid-Journey Recovery" },
-  { id: "demo-msme-b", name: "Surya Agro Traders (B)", desc: "Perfect Credit Hygiene" },
-  { id: "demo-msme-c", name: "Vedic Garments (C)", desc: "Compounding Risk Profile" },
-  { id: "demo-msme-d", name: "Hind Plastics (D)", desc: "No Employee Baseline" },
-  { id: "demo-msme-e", name: "Apex Enterprises (E)", desc: "One Clear Blocker" },
-  { id: "demo-msme-f", name: "Mehra Seasonal Goods (F)", desc: "Seasonal Cashflow Volatility" }
+  { id: "demo-msme-a", name: "Retail Dynamics (A)", desc: "Mid-Journey Recovery", sector: "Retail" },
+  { id: "demo-msme-b", name: "Surya Agro Traders (B)", desc: "Perfect Credit Hygiene", sector: "Services" },
+  { id: "demo-msme-c", name: "Vedic Garments (C)", desc: "Compounding Risk Profile", sector: "Services" },
+  { id: "demo-msme-d", name: "Hind Plastics (D)", desc: "No Employee Baseline", sector: "Manufacturing" },
+  { id: "demo-msme-e", name: "Apex Enterprises (E)", desc: "One Clear Blocker", sector: "Services" },
+  { id: "demo-msme-f", name: "Mehra Seasonal Goods (F)", desc: "Seasonal Cashflow Volatility", sector: "Retail" }
 ];
 
 export default function Portfolio({ onBack }) {
   const [portfolioData, setPortfolioData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedSector, setSelectedSector] = useState("All");
 
   useEffect(() => {
     let active = true;
@@ -28,7 +29,8 @@ export default function Portfolio({ onBack }) {
             daysRemaining: score.days_remaining,
             probability: score.current_probability,
             shapBreakdown: score.shap_breakdown,
-            disciplineLevel: score.msme_data.discipline_level
+            disciplineLevel: score.msme_data.discipline_level,
+            sector: score.msme_data.sector || msme.sector
           };
         });
         
@@ -99,6 +101,11 @@ export default function Portfolio({ onBack }) {
     );
   }
 
+  const filteredPortfolio = portfolioData.filter((msme) => {
+    if (selectedSector === "All") return true;
+    return msme.sector === selectedSector;
+  });
+
   return (
     <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans text-sky-cream w-full">
       <AmbientBackground daysRemaining={45} />
@@ -129,10 +136,31 @@ export default function Portfolio({ onBack }) {
           </div>
           <div className="text-right">
             <span className="text-[9px] font-display font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border bg-sky-dark text-sky-grey border-sky-midnight">
-              6 Accounts Registered
+              {filteredPortfolio.length} of {portfolioData.length} Accounts
             </span>
           </div>
         </header>
+
+        {/* Sector Filter Tabs */}
+        <div className="flex flex-wrap gap-2.5 items-center bg-sky-card border border-sky-midnight px-6 py-3 rounded-xl shadow-sm">
+          <span className="text-[10px] font-display uppercase tracking-widest font-extrabold text-sky-grey mr-2">Filter Sector:</span>
+          {["All", "Retail", "Manufacturing", "Services"].map((sec) => {
+            const isActive = selectedSector === sec;
+            return (
+              <button
+                key={sec}
+                onClick={() => setSelectedSector(sec)}
+                className={`px-4 py-1.5 text-[10px] font-display uppercase tracking-widest font-extrabold transition-all duration-200 rounded-xl border ${
+                  isActive
+                    ? "bg-sky-sunset text-sky-cream border-sky-sunset shadow-sm"
+                    : "bg-transparent text-sky-grey border-sky-midnight hover:border-sky-grey hover:text-sky-cream"
+                }`}
+              >
+                {sec}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Dense tabular portfolio card */}
         <div className="bg-sky-card border border-sky-midnight rounded-2xl shadow-lg overflow-hidden">
@@ -143,13 +171,14 @@ export default function Portfolio({ onBack }) {
                   <th className="px-6 py-4">MSME Account Name</th>
                   <th className="px-6 py-4">Account ID</th>
                   <th className="px-6 py-4">Discipline</th>
+                  <th className="px-6 py-4">Sector</th>
                   <th className="px-6 py-4">Credit Readiness</th>
                   <th className="px-6 py-4">Readiness Countdown</th>
                   <th className="px-6 py-4">Primary Constraints / SHAP Tag</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sky-midnight text-xs font-sans">
-                {portfolioData.map((msme) => {
+                {filteredPortfolio.map((msme) => {
                   const urg = getUrgencyStyle(msme.daysRemaining);
                   const topConstraint = getTopConstraint(msme.shapBreakdown);
                   
@@ -166,6 +195,9 @@ export default function Portfolio({ onBack }) {
                       </td>
                       <td className="px-6 py-4 font-mono text-[10px] text-sky-grey uppercase tracking-wider">
                         {msme.disciplineLevel}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-[10px] text-sky-grey uppercase tracking-wider">
+                        {msme.sector}
                       </td>
                       <td className="px-6 py-4 font-bold text-sky-cream">
                         {(msme.probability * 100).toFixed(1)}%

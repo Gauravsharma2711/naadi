@@ -6,6 +6,17 @@ import ScoreBreakdown from "../components/ScoreBreakdown";
 import { getMsmeScore, completeAction, simulateScore } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
 import ReadyState from "./ReadyState";
+import ProductCompare from "./ProductCompare";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+
+const MONITOR_MESSAGES = [
+  "Analyzing latest UPI transactions...",
+  "Checking GST portal synchronization...",
+  "Verifying EPFO deposit compliance...",
+  "Syncing account aggregator balances...",
+  "Recalibrating transactional risk models...",
+  "Scanning ledger invoices..."
+];
 
 export default function Dashboard({ msmeId, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -15,6 +26,27 @@ export default function Dashboard({ msmeId, onBack }) {
   const [completedActions, setCompletedActions] = useState(new Set());
   const [reductionPct, setReductionPct] = useState(0);
   const [simulatedDays, setSimulatedDays] = useState(null);
+  const [monitorIndex, setMonitorIndex] = useState(0);
+  const [monitorActive, setMonitorActive] = useState(false);
+  const [showProductCompare, setShowProductCompare] = useState(false);
+
+  // Trigger continuous monitoring micro-animation every 10 seconds
+  useEffect(() => {
+    if (loading || error) return;
+    
+    const interval = setInterval(() => {
+      setMonitorIndex((prev) => (prev + 1) % MONITOR_MESSAGES.length);
+      setMonitorActive(true);
+
+      const fadeTimeout = setTimeout(() => {
+        setMonitorActive(false);
+      }, 3000);
+
+      return () => clearTimeout(fadeTimeout);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [loading, error]);
 
   // Simulation logic triggered by slider
   useEffect(() => {
@@ -177,6 +209,15 @@ export default function Dashboard({ msmeId, onBack }) {
   const shapBreakdown = scoreData?.shap_breakdown ?? [];
   const maxDays = 180; // Maximum possible count from calibration heuristic
 
+  if (showProductCompare) {
+    return (
+      <ProductCompare 
+        msmeId={msmeId}
+        onBack={() => setShowProductCompare(false)}
+      />
+    );
+  }
+
   if (daysRemaining <= 0) {
     return (
       <ReadyState
@@ -219,6 +260,14 @@ export default function Dashboard({ msmeId, onBack }) {
           </div>
           
           <div className="text-right flex items-center gap-2">
+            <motion.button
+              onClick={() => setShowProductCompare(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-3 py-1 bg-sky-sunset text-sky-gold hover:text-white hover:bg-sky-gold border border-sky-gold/20 rounded font-sans font-bold text-[9px] uppercase tracking-widest transition-all duration-300 mr-2"
+            >
+              Compare Products
+            </motion.button>
             <span className="text-[10px] font-display text-sky-grey font-semibold uppercase tracking-widest hidden sm:inline">
               Integration: 
             </span>
@@ -228,17 +277,146 @@ export default function Dashboard({ msmeId, onBack }) {
           </div>
         </header>
 
+        {/* Verification Trust Badges */}
+        <div className="flex flex-wrap gap-3 items-center justify-start bg-sky-card/45 border border-sky-midnight/55 px-4 py-2.5 rounded-xl shadow-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#00D66B]/10 rounded-full border border-[#00D66B]/20 text-[10px] font-sans font-bold text-sky-cream">
+            <svg className="h-3 w-3 text-[#00D66B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>GST Verified</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#00D66B]/10 rounded-full border border-[#00D66B]/20 text-[10px] font-sans font-bold text-sky-cream">
+            <svg className="h-3 w-3 text-[#00D66B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>UPI Verified</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#00D66B]/10 rounded-full border border-[#00D66B]/20 text-[10px] font-sans font-bold text-sky-cream">
+            <svg className="h-3 w-3 text-[#00D66B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>AA Connected</span>
+          </div>
+
+          {msmeData?.has_employees ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#00D66B]/10 rounded-full border border-[#00D66B]/20 text-[10px] font-sans font-bold text-sky-cream">
+              <svg className="h-3 w-3 text-[#00D66B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>EPFO Linked</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-sky-sunset/10 rounded-full border border-sky-sunset/20 text-[10px] font-sans font-bold text-sky-grey">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-grey" />
+              <span>No EPFO Data</span>
+            </div>
+          )}
+        </div>
+
         {/* Main Body Columns: Two-Column split on Desktop */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
           
-          {/* Left Column: Growth-Ring Dial (~60% width) */}
-          <main className="md:col-span-3 flex justify-center w-full">
-            <CountdownDial 
-              daysRemaining={daysRemaining} 
-              maxDays={maxDays} 
-              probability={probability} 
-              simulatedDays={simulatedDays}
-            />
+          {/* Left Column: Growth-Ring Dial (~60% width) & Timeline */}
+          <main className="md:col-span-3 space-y-6 w-full">
+            <div className="flex flex-col items-center w-full">
+              <CountdownDial 
+                daysRemaining={daysRemaining} 
+                maxDays={maxDays} 
+                probability={probability} 
+                simulatedDays={simulatedDays}
+              />
+              
+              {/* Subtle Live Ledger Pulse */}
+              <div className="flex items-center justify-center gap-2 mt-4 text-[10px] font-sans text-sky-grey select-none min-h-[16px]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D66B] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00D66B]"></span>
+                </span>
+                <span className="font-extrabold uppercase tracking-widest text-[#5A6B70]">Ledger Monitoring Active</span>
+                
+                <span 
+                  className="transition-all duration-700 ease-in-out font-medium"
+                  style={{ 
+                    opacity: monitorActive ? 0.8 : 0, 
+                    transform: monitorActive ? "translateY(0)" : "translateY(2px)" 
+                  }}
+                >
+                  — {MONITOR_MESSAGES[monitorIndex]}
+                </span>
+              </div>
+            </div>
+
+            {/* Credit Readiness Timeline Chart */}
+            {scoreData?.historical_timeline && (
+              <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
+                <div className="border-b border-sky-midnight pb-3">
+                  <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-cream">
+                    Credit Readiness Timeline
+                  </h3>
+                  <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1">
+                    6-Month Historical Countdown Trend (Days Remaining)
+                  </p>
+                </div>
+                <div className="h-[200px] w-full font-sans text-xs">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={scoreData.historical_timeline}
+                      margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient id="colorDays" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00D66B" stopOpacity={0.2}/>
+                          <stop offset="95%" stopColor="#00D66B" stopOpacity={0.0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E3E1DE" />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="#5A6B70" 
+                        fontSize={10} 
+                        tickLine={false}
+                        axisLine={false} 
+                        dy={8}
+                      />
+                      <YAxis 
+                        stroke="#5A6B70" 
+                        fontSize={10} 
+                        tickLine={false}
+                        axisLine={false}
+                        domain={[0, 'auto']}
+                        dx={-8}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #E3E1DE',
+                          borderRadius: '12px',
+                          fontFamily: 'Inter, sans-serif',
+                          fontSize: '11px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                          color: '#001E2B'
+                        }}
+                        labelStyle={{ fontWeight: 'bold', color: '#001E2B', marginBottom: '4px' }}
+                        itemStyle={{ color: '#00D66B' }}
+                        formatter={(value) => [`${value} Days`, "Readiness"]}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="days_remaining" 
+                        stroke="#00D66B" 
+                        strokeWidth={2.5}
+                        fillOpacity={1} 
+                        fill="url(#colorDays)" 
+                        dot={{ r: 3, stroke: '#00D66B', strokeWidth: 2, fill: '#FFFFFF' }}
+                        activeDot={{ r: 5, stroke: '#00D66B', strokeWidth: 2, fill: '#00D66B' }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
           </main>
 
           {/* Right Column: Actions Stack or Success Offer Card (~40% width) */}

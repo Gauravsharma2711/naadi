@@ -95,4 +95,16 @@ export async function getMsmeStory(msmeId) {
   return response.json();
 }
 
+/**
+ * Fetches the evaluations for Working Capital vs Term Loan products for a given MSME.
+ */
+export async function getMsmeProducts(msmeId) {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/products`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch products for MSME ${msmeId}`);
+  }
+  return response.json();
+}
+
+
 
