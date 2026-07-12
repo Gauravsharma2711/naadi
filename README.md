@@ -15,7 +15,7 @@ Developed as our submission for the **IDBI Bank National Hackathon 2026** (Track
 
 ## 🔗 Live Links
 
-* **Live Demo Frontend**: [https://naadi-din-git-main-gaurav-atvercel.vercel.app](https://naadi-din-git-main-gaurav-atvercel.vercel.app)
+* **Live Demo Frontend**: [https://naadi-din.vercel.app](https://naadi-din.vercel.app)
 * **Backend API Documentation**: [https://naadi-din.onrender.com/docs](https://naadi-din.onrender.com/docs)
 
 ---
