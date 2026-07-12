@@ -25,7 +25,7 @@ app.include_router(actions_router)
 app.include_router(msme_router)
 app.include_router(report_router)
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {"status": "ok"}
 
