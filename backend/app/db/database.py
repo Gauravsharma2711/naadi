@@ -131,13 +131,54 @@ def load_db() -> Dict[str, Dict]:
             
     return _msme_db
 
-def get_msme(msme_id: str) -> Optional[Dict]:
+# In-memory session completed actions store
+# Format: { session_id: { msme_id: Set[action_id] } }
+_session_completed_actions: Dict[str, Dict[str, set]] = {}
+
+def add_session_completed_action(session_id: str, msme_id: str, action_id: str):
+    """
+    Registers a completed action for a specific session and MSME.
+    """
+    global _session_completed_actions
+    if session_id not in _session_completed_actions:
+        _session_completed_actions[session_id] = {}
+    if msme_id not in _session_completed_actions[session_id]:
+        _session_completed_actions[session_id][msme_id] = set()
+    _session_completed_actions[session_id][msme_id].add(action_id)
+
+def get_session_completed_actions(session_id: str, msme_id: str) -> set:
+    """
+    Returns the set of completed actions for a specific session and MSME.
+    """
+    return _session_completed_actions.get(session_id, {}).get(msme_id, set())
+
+def get_msme(msme_id: str, session_id: Optional[str] = None) -> Optional[Dict]:
     """
     Retrieves the raw feature data for a specific MSME by its ID.
-    Returns None if the MSME does not exist.
+    If a session_id is provided, applies any session-completed actions on top of the baseline.
     """
     db = load_db()
-    return db.get(msme_id)
+    msme_data = db.get(msme_id)
+    if not msme_data:
+        return None
+        
+    # Always copy the baseline data to prevent accidental in-memory modifications to global cache
+    msme_copy = msme_data.copy()
+    
+    if session_id:
+        completed = get_session_completed_actions(session_id, msme_id)
+        improvements = {
+            'filing_on_time_rate': 1.0,                 # 100% filing compliance
+            'upi_trend_slope': 0.05,                    # Positive 5% MoM volume trend
+            'cashflow_volatility_score': 0.05,          # Low volatility index (highly stable)
+            'top_buyer_concentration_pct': 0.20,        # Safe customer diversification (20% share)
+            'payroll_consistency_score': 1.0            # 100% payroll compliance
+        }
+        for action_id in completed:
+            if action_id in improvements:
+                msme_copy[action_id] = improvements[action_id]
+                
+    return msme_copy
 
 def update_msme(msme_id: str, updated_data: Dict) -> bool:
     """

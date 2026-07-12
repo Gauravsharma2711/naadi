@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict
+from typing import List, Dict, Optional
 import sys
 import os
 # Ensure app/data is in python path so that mock imports in synthetic_generator function correctly
@@ -15,14 +15,14 @@ from app.ml.days_calibration import calculate_days_to_ready
 from app.data.synthetic_generator import calculate_normalized_slope
 from app.db.database import get_msme
 
-def get_msme_historical_timeline(msme_id: str) -> List[Dict]:
+def get_msme_historical_timeline(msme_id: str, session_id: Optional[str] = None) -> List[Dict]:
     """
     Computes a deterministic, stable 6-month history of credit-readiness days remaining
     by seeding Python's random generator with the MSME ID and re-running the scoring
     pipeline up to each month's historical snapshot.
     """
     # 1. Fetch MSME raw properties
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         return []
         

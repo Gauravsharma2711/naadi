@@ -1,6 +1,7 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.db.database import get_msme, update_msme
+from app.db.database import get_msme, update_msme, add_session_completed_action, get_session_completed_actions
 from app.ml.days_calibration import calculate_days_to_ready
 
 router = APIRouter()
@@ -9,14 +10,14 @@ class ActionCompleteRequest(BaseModel):
     action_id: str
 
 @router.post("/msme/{msme_id}/action-complete")
-def complete_action(msme_id: str, payload: ActionCompleteRequest):
+def complete_action(msme_id: str, payload: ActionCompleteRequest, session_id: Optional[str] = None):
     """
     Marks a credit-readiness action complete for a specific MSME, updates the
     underlying feature value to simulate recovery, re-runs the scoring pipeline,
     and returns the updated (reduced) day countdown and actions list.
     """
     # 1. Fetch current MSME records
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         
@@ -37,13 +38,16 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest):
             detail=f"Invalid action_id '{action_id}'. Valid actions are: {list(improvements.keys())}"
         )
         
-    # 2. Update the corresponding feature value
-    success = update_msme(msme_id, {action_id: improvements[action_id]})
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to update MSME record in database")
+    # 2. Update the corresponding feature value (using session store if session_id is provided, else DB)
+    if session_id:
+        add_session_completed_action(session_id, msme_id, action_id)
+    else:
+        success = update_msme(msme_id, {action_id: improvements[action_id]})
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to update MSME record in database")
         
     # 3. Reload updated data
-    updated_msme = get_msme(msme_id)
+    updated_msme = get_msme(msme_id, session_id)
     features = {
         'filing_on_time_rate': updated_msme['filing_on_time_rate'],
         'upi_trend_slope': updated_msme['upi_trend_slope'],
@@ -64,11 +68,14 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest):
         for rec in calibration["recommendations"]
     ]
     
-    # 5. Return updated days remaining and actions
+    completed_list = list(get_session_completed_actions(session_id, msme_id)) if session_id else []
+
+    # 5. Return updated days remaining, actions, and completed list
     return {
         "days_remaining": calibration["days_to_ready"],
         "current_probability": calibration["credit_readiness_probability"],
         "top_3_actions": top_3_actions,
+        "completed_actions": completed_list,
         "msme_data": {
             "msme_id": updated_msme["msme_id"],
             "discipline_level": updated_msme["discipline_level"],

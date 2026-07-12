@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.db.database import get_msme
@@ -55,12 +56,12 @@ def connect_msme(payload: ConnectRequest):
     )
 
 @router.get("/msme/{msme_id}/story")
-def get_msme_story(msme_id: str):
+def get_msme_story(msme_id: str, session_id: Optional[str] = None):
     """
     Generates a financial story paragraph using Amazon Bedrock.
     Falls back gracefully to returning None if the Bedrock call fails, times out, or has an expired token.
     """
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         

@@ -1,4 +1,19 @@
-const API_BASE_URL = "https://naadi-din.onrender.com";
+const API_BASE_URL = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:8000"
+  : "https://naadi-din.onrender.com";
+
+/**
+ * Returns or generates a session-specific visitor identifier.
+ */
+function getSessionId() {
+  if (typeof window === "undefined") return "";
+  let sessionId = localStorage.getItem("session_id");
+  if (!sessionId) {
+    sessionId = "session-" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("session_id", sessionId);
+  }
+  return sessionId;
+}
 
 /**
  * Connects an MSME by validating the ID and linking data sources.
@@ -7,7 +22,7 @@ const API_BASE_URL = "https://naadi-din.onrender.com";
  * Response: { msme_id, connected_sources, business_name, discipline_level, has_employees }
  */
 export async function connectMsme(msmeId, sources) {
-  const response = await fetch(`${API_BASE_URL}/msme/connect`, {
+  const response = await fetch(`${API_BASE_URL}/msme/connect?session_id=${getSessionId()}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ msme_id: msmeId, sources }),
@@ -26,7 +41,7 @@ export async function connectMsme(msmeId, sources) {
  * and SHAP explanation breakdown for a given MSME.
  */
 export async function getMsmeScore(msmeId) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/score`);
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/score?session_id=${getSessionId()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch score for MSME ${msmeId}`);
   }
@@ -38,7 +53,7 @@ export async function getMsmeScore(msmeId) {
  * Re-runs the scoring pipeline and returns the updated countdown/actions.
  */
 export async function completeAction(msmeId, actionId) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/action-complete`, {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/action-complete?session_id=${getSessionId()}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action_id: actionId }),
@@ -57,7 +72,7 @@ export async function completeAction(msmeId, actionId) {
  * GET /msme/{msme_id}/report
  */
 export async function getMsmeReport(msmeId) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/report`);
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/report?session_id=${getSessionId()}`);
   if (!response.ok) {
     throw new Error(`Failed to generate credit report for MSME ${msmeId}`);
   }
@@ -69,7 +84,7 @@ export async function getMsmeReport(msmeId) {
  * POST /msme/{msme_id}/simulate
  */
 export async function simulateScore(msmeId, simulatedFeatures) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/simulate`, {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/simulate?session_id=${getSessionId()}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ features: simulatedFeatures }),
@@ -88,7 +103,7 @@ export async function simulateScore(msmeId, simulatedFeatures) {
  * GET /msme/{msme_id}/story
  */
 export async function getMsmeStory(msmeId) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/story`);
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/story?session_id=${getSessionId()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch story for MSME ${msmeId}`);
   }
@@ -99,7 +114,7 @@ export async function getMsmeStory(msmeId) {
  * Fetches the evaluations for Working Capital vs Term Loan products for a given MSME.
  */
 export async function getMsmeProducts(msmeId) {
-  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/products`);
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/products?session_id=${getSessionId()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch products for MSME ${msmeId}`);
   }

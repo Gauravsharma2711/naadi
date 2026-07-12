@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from app.db.database import get_msme
 from app.ml.days_calibration import calculate_days_to_ready
@@ -7,13 +8,13 @@ from app.ml.timeline import get_msme_historical_timeline
 router = APIRouter()
 
 @router.get("/msme/{msme_id}/score")
-def get_msme_score(msme_id: str):
+def get_msme_score(msme_id: str, session_id: Optional[str] = None):
     """
     Retrieves the credit-readiness score, SHAP explanation breakdown, 
     and prioritized recovery recommendations for a specific MSME.
     """
     # 1. Fetch MSME raw data from the database
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         
@@ -52,12 +53,16 @@ def get_msme_score(msme_id: str):
     ]
     
     # 5. Build and return the structured response
+    from app.db.database import get_session_completed_actions
+    completed_list = list(get_session_completed_actions(session_id, msme_id)) if session_id else []
+
     return {
         "days_remaining": calibration["days_to_ready"],
         "current_probability": calibration["credit_readiness_probability"],
         "top_3_actions": top_3_actions,
         "shap_breakdown": shap_breakdown,
-        "historical_timeline": get_msme_historical_timeline(msme_id),
+        "historical_timeline": get_msme_historical_timeline(msme_id, session_id),
+        "completed_actions": completed_list,
         "msme_data": {
             "msme_id": msme_data["msme_id"],
             "discipline_level": msme_data["discipline_level"],
@@ -72,11 +77,11 @@ def get_msme_score(msme_id: str):
     }
 
 @router.post("/msme/{msme_id}/simulate")
-def simulate_msme_score(msme_id: str, payload: dict):
+def simulate_msme_score(msme_id: str, payload: dict, session_id: Optional[str] = None):
     """
     Simulates the days remaining using adjusted feature values without modifying the database.
     """
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         
@@ -102,13 +107,13 @@ def simulate_msme_score(msme_id: str, payload: dict):
     }
 
 @router.get("/msme/{msme_id}/products")
-def get_msme_loan_products(msme_id: str):
+def get_msme_loan_products(msme_id: str, session_id: Optional[str] = None):
     """
     Evaluates the MSME against two different loan product profiles:
     - Working Capital Loan (lenient threshold = 0.60, max amount 5L, tenure 12m)
     - Term Loan (stricter threshold = 0.75, max amount 10L, tenure 24m)
     """
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         

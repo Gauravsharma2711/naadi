@@ -90,6 +90,9 @@ export default function Dashboard({ msmeId, onBack }) {
         if (active) {
           setScoreData(data);
           setMsmeData(data.msme_data);
+          if (data.completed_actions) {
+            setCompletedActions(new Set(data.completed_actions));
+          }
         }
       } catch (err) {
         if (active) {
@@ -142,11 +145,18 @@ export default function Dashboard({ msmeId, onBack }) {
         setMsmeData(updatedData.msme_data);
       }
 
+      if (updatedData.completed_actions) {
+        setCompletedActions(new Set(updatedData.completed_actions));
+      }
+
       // Re-fetch full score data in the background to refresh the complete SHAP explanation breakdown
       try {
         const fullRefresh = await getMsmeScore(msmeId);
         setScoreData(fullRefresh);
         setMsmeData(fullRefresh.msme_data);
+        if (fullRefresh.completed_actions) {
+          setCompletedActions(new Set(fullRefresh.completed_actions));
+        }
       } catch (refreshErr) {
         console.warn("Background SHAP refresh failed, using partial update from action complete response:", refreshErr);
       }

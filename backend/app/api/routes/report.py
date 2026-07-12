@@ -1,5 +1,6 @@
 import os
 import io
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from app.db.database import get_msme
@@ -346,12 +347,12 @@ def generate_pdf_report(msme_id: str, msme_data: dict, calibration: dict, shap_b
     return pdf_bytes
 
 @router.get("/msme/{msme_id}/report")
-def get_msme_report(msme_id: str):
+def get_msme_report(msme_id: str, session_id: Optional[str] = None):
     """
     Generates report PDF, uploads it to S3, and returns a presigned URL.
     """
     # 1. Fetch data
-    msme_data = get_msme(msme_id)
+    msme_data = get_msme(msme_id, session_id)
     if not msme_data:
         raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
         
