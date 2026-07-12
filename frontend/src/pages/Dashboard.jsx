@@ -316,6 +316,7 @@ export default function Dashboard({ msmeId, onBack }) {
         probability={probability}
         shapBreakdown={shapBreakdown}
         msmeData={msmeData}
+        onReset={completedActions.size > 0 ? handleResetDemo : null}
       />
     );
   }

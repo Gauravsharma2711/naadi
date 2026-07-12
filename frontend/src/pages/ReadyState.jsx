@@ -74,7 +74,7 @@ function DownloadReportButton({ msmeId }) {
   );
 }
 
-export default function ReadyState({ msmeId, onBack, probability, shapBreakdown, msmeData }) {
+export default function ReadyState({ msmeId, onBack, probability, shapBreakdown, msmeData, onReset }) {
   const certificateRef = React.useRef(null);
   const [currencyFormat, setCurrencyFormat] = useState("lakhs");
 
@@ -131,8 +131,19 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
               <h2 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-cream leading-tight">
                 Din <span className="text-[10px] font-display font-bold text-sky-gold uppercase tracking-widest bg-sky-sunset px-2 py-0.5 rounded ml-1 border border-sky-gold/10">Dashboard</span>
               </h2>
-              <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1">
-                Business ID: <strong className="text-sky-cream">{msmeId}</strong>
+              <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1 flex items-center gap-2 select-none">
+                <span>Business ID: <strong className="text-sky-cream">{msmeId}</strong></span>
+                {onReset && (
+                  <>
+                    <span className="text-sky-midnight">|</span>
+                    <button
+                      onClick={onReset}
+                      className="font-sans font-bold text-sky-grey hover:text-sky-crimson hover:underline transition-colors duration-200 uppercase tracking-wider bg-transparent border-none cursor-pointer p-0"
+                    >
+                      Reset Demo
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </div>
