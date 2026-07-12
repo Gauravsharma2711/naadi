@@ -109,13 +109,13 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
   };
 
   return (
-    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-x-hidden font-sans select-none text-sky-cream w-full">
       {/* Ambient background with leaf/growth-ring drift animations */}
       <AmbientBackground />
 
       <div className="w-full max-w-6xl mx-auto relative z-10 space-y-6">
         {/* Navigation & Header */}
-        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-sky-card border border-sky-midnight px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] gap-3 sm:gap-0">
           <div className="flex items-center gap-3">
             <motion.button
               onClick={onBack}
@@ -137,7 +137,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
             </div>
           </div>
           
-          <div className="text-right flex items-center gap-2">
+          <div className="w-full sm:w-auto flex justify-between sm:justify-end items-center gap-2">
             <span className="text-[10px] font-display text-sky-grey font-semibold uppercase tracking-widest hidden sm:inline">
               Status: 
             </span>
@@ -200,7 +200,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
 
             {/* Shareable Success Certificate */}
             <div className="w-full max-w-sm space-y-4">
-              <div ref={certificateRef} className="p-8 bg-white border-2 border-[#B8E8C8] rounded-2xl shadow-lg text-[#001E2B] space-y-6 relative overflow-hidden select-none">
+              <div ref={certificateRef} className="p-4 sm:p-8 bg-white border-2 border-[#B8E8C8] rounded-2xl shadow-lg text-[#001E2B] space-y-6 relative overflow-hidden select-none">
                 {/* Inner certificate border */}
                 <div className="absolute inset-2 border border-[#B8E8C8]/30 rounded-xl pointer-events-none" />
                 
@@ -295,9 +295,9 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
                 </p>
               </div>
 
-              <div className="border-t border-b border-sky-midnight py-4 my-2 flex justify-between items-center">
+              <div className="border-t border-b border-sky-midnight py-4 my-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                     <span className="text-2xl font-display font-extrabold text-sky-cream">
                       {formatCurrency(1000000)}
                     </span>
@@ -319,7 +319,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
                   </div>
                   <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Approved Limit</p>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <span className="text-xl font-display font-extrabold text-sky-gold">11.5%</span>
                   <p className="text-[10px] font-display text-sky-grey uppercase tracking-widest font-extrabold mt-0.5">Annual APR</p>
                 </div>
@@ -392,7 +392,7 @@ export default function ReadyState({ msmeId, onBack, probability, shapBreakdown,
                   <rect x="230" y="50" width="60" height="28" rx="4" fill="#B8E8C8" opacity="0.35" />
                 </svg>
                 {/* Pin Overlay at intersection point */}
-                <div className="absolute top-[40px] left-[150px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                <div className="absolute top-[33.33%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                   <div className="relative flex h-5 w-5 items-center justify-center">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-gold opacity-75"></span>
                     <span className="relative rounded-full h-3 w-3 bg-sky-gold border-2 border-white flex items-center justify-center shadow-md animate-pulse"></span>

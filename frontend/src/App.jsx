@@ -42,7 +42,7 @@ export default function App() {
           <Onboarding onSelectMsme={handleSelectMsme} />
           {/* Floating Utility Triggers */}
           {/* Floating Utility Triggers */}
-          <div className="fixed bottom-4 right-4 flex gap-2.5 z-50">
+          <div className="fixed bottom-4 right-4 flex flex-col sm:flex-row gap-2 z-50 items-end">
             <motion.button
               onClick={() => setShowPortfolio(true)}
               whileHover={{ scale: 1.05, y: -2, boxShadow: "0 8px 20px rgba(0,214,107,0.12)", borderColor: "#00D66B" }}

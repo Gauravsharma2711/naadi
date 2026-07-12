@@ -231,13 +231,13 @@ export default function Dashboard({ msmeId, onBack }) {
   }
 
   return (
-    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-x-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground daysRemaining={daysRemaining} />
 
       <div className="w-full max-w-6xl mx-auto relative z-10 space-y-6">
         
         {/* Navigation & Header */}
-        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-sky-card border border-sky-midnight px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] gap-3 sm:gap-0">
           <div className="flex items-center gap-3">
             <motion.button
               onClick={onBack}
@@ -259,7 +259,7 @@ export default function Dashboard({ msmeId, onBack }) {
             </div>
           </div>
           
-          <div className="text-right flex items-center gap-2">
+          <div className="w-full sm:w-auto flex justify-between sm:justify-end items-center gap-2">
             <motion.button
               onClick={() => setShowProductCompare(true)}
               whileHover={{ scale: 1.05 }}
@@ -363,7 +363,7 @@ export default function Dashboard({ msmeId, onBack }) {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={scoreData.historical_timeline}
-                      margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                      margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
                     >
                       <defs>
                         <linearGradient id="colorDays" x1="0" y1="0" x2="0" y2="1">

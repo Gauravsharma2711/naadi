@@ -107,13 +107,13 @@ export default function Portfolio({ onBack }) {
   });
 
   return (
-    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-x-hidden font-sans text-sky-cream w-full">
       <AmbientBackground daysRemaining={45} />
       
       <div className="w-full max-w-5xl mx-auto relative z-10 space-y-6">
         
         {/* Header section */}
-        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-md">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-sky-card border border-sky-midnight px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-md gap-3 sm:gap-0">
           <div className="flex items-center gap-3">
             <motion.button
               onClick={onBack}
@@ -134,7 +134,7 @@ export default function Portfolio({ onBack }) {
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="w-full sm:w-auto flex justify-between sm:justify-end items-center gap-2">
             <span className="text-[9px] font-display font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border bg-sky-dark text-sky-grey border-sky-midnight">
               {filteredPortfolio.length} of {portfolioData.length} Accounts
             </span>
@@ -162,9 +162,59 @@ export default function Portfolio({ onBack }) {
           })}
         </div>
 
-        {/* Dense tabular portfolio card */}
-        <div className="bg-sky-card border border-sky-midnight rounded-2xl shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
+        {/* Dense tabular portfolio card (Desktop table, Mobile cards stack) */}
+        <div className="bg-transparent md:bg-sky-card md:border md:border-sky-midnight md:rounded-2xl md:shadow-lg overflow-hidden">
+          
+          {/* Mobile Card Stack */}
+          <div className="block md:hidden space-y-4">
+            {filteredPortfolio.map((msme) => {
+              const urg = getUrgencyStyle(msme.daysRemaining);
+              const topConstraint = getTopConstraint(msme.shapBreakdown);
+              return (
+                <div key={msme.id} className="bg-sky-card border border-sky-midnight p-5 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-sky-gold" />
+                  <div className="flex justify-between items-start pl-2">
+                    <div>
+                      <h4 className="text-sm font-display font-bold text-sky-cream">{msme.name}</h4>
+                      <p className="text-[10px] font-sans text-sky-grey mt-0.5">{msme.desc}</p>
+                    </div>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-display font-bold border uppercase tracking-wider ${urg.bg}`}>
+                      {urg.label}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pl-2 border-t border-sky-midnight/40 pt-2.5">
+                    <div>
+                      <span className="text-[8px] font-display text-sky-grey uppercase tracking-wider block">Account ID</span>
+                      <strong className="font-mono text-sky-cream font-semibold">{msme.id}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-display text-sky-grey uppercase tracking-wider block">Discipline</span>
+                      <strong className="font-mono text-sky-cream font-semibold uppercase">{msme.disciplineLevel}</strong>
+                    </div>
+                    <div className="mt-1">
+                      <span className="text-[8px] font-display text-sky-grey uppercase tracking-wider block">Sector</span>
+                      <strong className="font-mono text-sky-cream font-semibold uppercase">{msme.sector}</strong>
+                    </div>
+                    <div className="mt-1">
+                      <span className="text-[8px] font-display text-sky-grey uppercase tracking-wider block">Readiness</span>
+                      <strong className="text-sky-gold font-bold">{(msme.probability * 100).toFixed(1)}%</strong>
+                    </div>
+                  </div>
+
+                  <div className="pl-2 border-t border-sky-midnight/40 pt-2.5 flex flex-col gap-1">
+                    <span className="text-[8px] font-display text-sky-grey uppercase tracking-wider">Primary Constraint</span>
+                    <span className="px-2 py-0.5 bg-sky-dark border border-sky-midnight rounded text-[10px] text-sky-grey font-medium self-start">
+                      {topConstraint}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-sky-midnight bg-sky-dark/45 text-[9px] font-display text-sky-grey uppercase tracking-widest font-extrabold">

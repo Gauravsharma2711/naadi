@@ -83,12 +83,12 @@ export default function Compare({ onBack }) {
   }
 
   return (
-    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent px-6 py-12 relative overflow-x-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground />
 
       <div className="w-full max-w-6xl mx-auto relative z-10 space-y-6">
         {/* Navigation & Header */}
-        <header className="flex justify-between items-center bg-sky-card border border-sky-midnight px-6 py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-sky-card border border-sky-midnight px-4 py-3 sm:px-6 sm:py-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] gap-3 sm:gap-0">
           <div className="flex items-center gap-3">
             <motion.button
               onClick={onBack}
@@ -110,7 +110,7 @@ export default function Compare({ onBack }) {
             </div>
           </div>
 
-          <div className="text-right">
+          <div className="w-full sm:w-auto flex justify-between sm:justify-end items-center gap-2">
             <span className="text-[9px] font-display font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full border bg-sky-sunset text-sky-gold border-sky-gold/20">
               Side-by-Side Model Insights
             </span>

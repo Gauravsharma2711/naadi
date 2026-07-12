@@ -146,11 +146,11 @@ export default function Onboarding({ onSelectMsme }) {
   ];
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col justify-center items-center px-6 py-12 relative overflow-hidden font-sans select-none text-sky-cream w-full">
+    <div className="min-h-screen bg-transparent flex flex-col justify-center items-center px-6 py-12 relative overflow-x-hidden font-sans select-none text-sky-cream w-full">
       <AmbientBackground daysRemaining={47} />
       
       {step === 2 && (
-        <nav className="absolute top-0 left-0 right-0 h-16 bg-sky-dark/85 backdrop-blur-md border-b border-sky-midnight px-8 flex items-center justify-between z-20">
+        <nav className="absolute top-0 left-0 right-0 h-16 bg-sky-dark/85 backdrop-blur-md border-b border-sky-midnight px-4 sm:px-8 flex items-center justify-between z-20">
           <div className="font-display font-bold text-lg uppercase tracking-widest text-sky-cream">
             DIN
           </div>
@@ -190,7 +190,7 @@ export default function Onboarding({ onSelectMsme }) {
               </div>
 
               {/* Visual phone mockup and growth rings illustration */}
-              <div className="relative w-72 h-[26rem] select-none scale-90 sm:scale-100 mt-2">
+              <div className="relative w-72 h-[26rem] select-none scale-90 sm:scale-100 mt-2 mb-6 lg:mb-0">
                 {/* Scattered overlapping growth rings and leaves behind the phone */}
                 <div className="absolute -top-10 -left-12 w-28 h-28 text-sky-sunset opacity-40 animate-pulse pointer-events-none">
                   <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
