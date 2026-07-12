@@ -156,6 +156,14 @@ def get_session_completed_actions(session_id: str, msme_id: str) -> dict:
     """
     return _session_completed_actions.get(session_id, {}).get(msme_id, {})
 
+def reset_session_completed_actions(session_id: str, msme_id: str):
+    """
+    Clears any completed actions for a specific session and MSME.
+    """
+    global _session_completed_actions
+    if session_id in _session_completed_actions and msme_id in _session_completed_actions[session_id]:
+        _session_completed_actions[session_id][msme_id] = {}
+
 def get_msme(msme_id: str, session_id: Optional[str] = None) -> Optional[Dict]:
     """
     Retrieves the raw feature data for a specific MSME by its ID.

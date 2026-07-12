@@ -121,5 +121,22 @@ export async function getMsmeProducts(msmeId) {
   return response.json();
 }
 
+/**
+ * Resets the completed actions for the current session and MSME.
+ * POST /msme/{msme_id}/reset
+ */
+export async function resetDemo(msmeId) {
+  const response = await fetch(`${API_BASE_URL}/msme/${msmeId}/reset?session_id=${getSessionId()}`, {
+    method: "POST"
+  });
+  
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Failed to reset demo: ${errText || response.statusText}`);
+  }
+  
+  return response.json();
+}
+
 
 

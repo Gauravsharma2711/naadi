@@ -89,3 +89,54 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest, session_id: Op
             "payroll_consistency_score": updated_msme["payroll_consistency_score"]
         }
     }
+
+@router.post("/msme/{msme_id}/reset")
+def reset_demo(msme_id: str, session_id: Optional[str] = None):
+    """
+    Resets any completions for this specific session and MSME, returning the baseline score.
+    """
+    if session_id:
+        from app.db.database import reset_session_completed_actions
+        reset_session_completed_actions(session_id, msme_id)
+        
+    # Fetch clean baseline MSME records
+    updated_msme = get_msme(msme_id, session_id)
+    if not updated_msme:
+        raise HTTPException(status_code=404, detail=f"MSME with ID {msme_id} not found")
+        
+    features = {
+        'filing_on_time_rate': updated_msme['filing_on_time_rate'],
+        'upi_trend_slope': updated_msme['upi_trend_slope'],
+        'cashflow_volatility_score': updated_msme['cashflow_volatility_score'],
+        'top_buyer_concentration_pct': updated_msme['top_buyer_concentration_pct'],
+        'payroll_consistency_score': updated_msme['payroll_consistency_score']
+    }
+    
+    calibration = calculate_days_to_ready(features, msme_id=msme_id)
+    
+    top_3_actions = [
+        {
+            "action_id": rec["feature"],
+            "action": rec["action"],
+            "days_saved": rec["days_saved"]
+        }
+        for rec in calibration["recommendations"]
+    ]
+    
+    return {
+        "days_remaining": calibration["days_to_ready"],
+        "current_probability": calibration["credit_readiness_probability"],
+        "top_3_actions": top_3_actions,
+        "completed_actions": [],
+        "completed_actions_timestamps": {},
+        "msme_data": {
+            "msme_id": updated_msme["msme_id"],
+            "discipline_level": updated_msme["discipline_level"],
+            "has_employees": updated_msme["has_employees"],
+            "filing_on_time_rate": updated_msme["filing_on_time_rate"],
+            "upi_trend_slope": updated_msme["upi_trend_slope"],
+            "cashflow_volatility_score": updated_msme["cashflow_volatility_score"],
+            "top_buyer_concentration_pct": updated_msme["top_buyer_concentration_pct"],
+            "payroll_consistency_score": updated_msme["payroll_consistency_score"]
+        }
+    }

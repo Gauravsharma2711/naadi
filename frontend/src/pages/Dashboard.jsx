@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CountdownDial from "../components/CountdownDial";
 import ActionCard from "../components/ActionCard";
 import ScoreBreakdown from "../components/ScoreBreakdown";
-import { getMsmeScore, completeAction, simulateScore } from "../services/api";
+import { getMsmeScore, completeAction, simulateScore, resetDemo } from "../services/api";
 import AmbientBackground from "../components/AmbientBackground";
 import ReadyState from "./ReadyState";
 import ProductCompare from "./ProductCompare";
@@ -235,6 +235,23 @@ export default function Dashboard({ msmeId, onBack }) {
     }
   };
 
+  const handleResetDemo = async () => {
+    if (!confirm("Are you sure you want to reset this demo's progress?")) return;
+    
+    try {
+      const resetData = await resetDemo(msmeId);
+      
+      // Update local state with the reset baseline data
+      setScoreData(resetData);
+      setMsmeData(resetData.msme_data);
+      setCompletedActions(new Set());
+      setCompletedActionsTimestamps({});
+    } catch (err) {
+      console.error(err);
+      alert("Failed to reset demo. Please try again.");
+    }
+  };
+
   // Rendering Loading State (consistent with DESIGN_SYSTEM.md)
   if (loading) {
     return (
@@ -332,8 +349,19 @@ export default function Dashboard({ msmeId, onBack }) {
                   </span>
                 )}
               </h2>
-              <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1">
-                Business ID: <strong className="text-sky-cream">{msmeId}</strong>
+              <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1 flex items-center gap-2 select-none">
+                <span>Business ID: <strong className="text-sky-cream">{msmeId}</strong></span>
+                {completedActions.size > 0 && (
+                  <>
+                    <span className="text-sky-midnight">|</span>
+                    <button
+                      onClick={handleResetDemo}
+                      className="font-sans font-bold text-sky-grey hover:text-sky-crimson hover:underline transition-colors duration-200 uppercase tracking-wider bg-transparent border-none cursor-pointer p-0"
+                    >
+                      Reset Demo
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </div>
