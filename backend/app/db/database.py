@@ -132,25 +132,29 @@ def load_db() -> Dict[str, Dict]:
     return _msme_db
 
 # In-memory session completed actions store
-# Format: { session_id: { msme_id: Set[action_id] } }
-_session_completed_actions: Dict[str, Dict[str, set]] = {}
+# Format: { session_id: { msme_id: { action_id: timestamp_iso_str } } }
+_session_completed_actions: Dict[str, Dict[str, dict]] = {}
 
 def add_session_completed_action(session_id: str, msme_id: str, action_id: str):
     """
-    Registers a completed action for a specific session and MSME.
+    Registers a completed action with its timestamp for a specific session and MSME.
     """
+    from datetime import datetime, timezone
     global _session_completed_actions
     if session_id not in _session_completed_actions:
         _session_completed_actions[session_id] = {}
     if msme_id not in _session_completed_actions[session_id]:
-        _session_completed_actions[session_id][msme_id] = set()
-    _session_completed_actions[session_id][msme_id].add(action_id)
+        _session_completed_actions[session_id][msme_id] = {}
+    
+    # Store timestamp only if the action was not already completed (preserving the original completion time)
+    if action_id not in _session_completed_actions[session_id][msme_id]:
+        _session_completed_actions[session_id][msme_id][action_id] = datetime.now(timezone.utc).isoformat()
 
-def get_session_completed_actions(session_id: str, msme_id: str) -> set:
+def get_session_completed_actions(session_id: str, msme_id: str) -> dict:
     """
-    Returns the set of completed actions for a specific session and MSME.
+    Returns a dictionary of completed action_id -> completed_at timestamp for a specific session and MSME.
     """
-    return _session_completed_actions.get(session_id, {}).get(msme_id, set())
+    return _session_completed_actions.get(session_id, {}).get(msme_id, {})
 
 def get_msme(msme_id: str, session_id: Optional[str] = None) -> Optional[Dict]:
     """

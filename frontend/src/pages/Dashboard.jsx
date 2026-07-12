@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CountdownDial from "../components/CountdownDial";
 import ActionCard from "../components/ActionCard";
@@ -24,11 +24,64 @@ export default function Dashboard({ msmeId, onBack }) {
   const [scoreData, setScoreData] = useState(null);
   const [msmeData, setMsmeData] = useState(null);
   const [completedActions, setCompletedActions] = useState(new Set());
+  const [completedActionsTimestamps, setCompletedActionsTimestamps] = useState({});
+  const [tick, setTick] = useState(0);
   const [reductionPct, setReductionPct] = useState(0);
   const [simulatedDays, setSimulatedDays] = useState(null);
   const [monitorIndex, setMonitorIndex] = useState(0);
   const [monitorActive, setMonitorActive] = useState(false);
   const [showProductCompare, setShowProductCompare] = useState(false);
+
+  // Trigger relative time refresh ticker every 10 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const journeyLog = useMemo(() => {
+    if (!completedActionsTimestamps) return [];
+    const logItems = Object.entries(completedActionsTimestamps).map(([actionId, completedAt]) => ({
+      action_id: actionId,
+      completed_at: completedAt
+    }));
+    logItems.sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
+    return logItems;
+  }, [completedActionsTimestamps]);
+
+  const getActionLabel = (actionId) => {
+    const labels = {
+      'filing_on_time_rate': 'GST Filing Compliance',
+      'upi_trend_slope': 'UPI Settlement Growth',
+      'cashflow_volatility_score': 'Cashflow Stability',
+      'top_buyer_concentration_pct': 'Buyer Concentration Risk',
+      'payroll_consistency_score': 'EPFO Payroll Consistency'
+    };
+    return labels[actionId] || actionId;
+  };
+
+  const getRelativeTime = (timestampIso) => {
+    if (!timestampIso) return "";
+    const date = new Date(timestampIso);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHr = Math.floor(diffMin / 60);
+    
+    if (diffSec < 15) {
+      return "just now";
+    } else if (diffSec < 60) {
+      return `${diffSec} seconds ago`;
+    } else if (diffMin < 60) {
+      return `${diffMin} minute${diffMin !== 1 ? "s" : ""} ago`;
+    } else if (diffHr < 24) {
+      return `${diffHr} hour${diffHr !== 1 ? "s" : ""} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
 
   // Trigger continuous monitoring micro-animation every 10 seconds
   useEffect(() => {
@@ -93,6 +146,9 @@ export default function Dashboard({ msmeId, onBack }) {
           if (data.completed_actions) {
             setCompletedActions(new Set(data.completed_actions));
           }
+          if (data.completed_actions_timestamps) {
+            setCompletedActionsTimestamps(data.completed_actions_timestamps);
+          }
         }
       } catch (err) {
         if (active) {
@@ -149,6 +205,10 @@ export default function Dashboard({ msmeId, onBack }) {
         setCompletedActions(new Set(updatedData.completed_actions));
       }
 
+      if (updatedData.completed_actions_timestamps) {
+        setCompletedActionsTimestamps(updatedData.completed_actions_timestamps);
+      }
+
       // Re-fetch full score data in the background to refresh the complete SHAP explanation breakdown
       try {
         const fullRefresh = await getMsmeScore(msmeId);
@@ -156,6 +216,9 @@ export default function Dashboard({ msmeId, onBack }) {
         setMsmeData(fullRefresh.msme_data);
         if (fullRefresh.completed_actions) {
           setCompletedActions(new Set(fullRefresh.completed_actions));
+        }
+        if (fullRefresh.completed_actions_timestamps) {
+          setCompletedActionsTimestamps(fullRefresh.completed_actions_timestamps);
         }
       } catch (refreshErr) {
         console.warn("Background SHAP refresh failed, using partial update from action complete response:", refreshErr);
@@ -260,8 +323,14 @@ export default function Dashboard({ msmeId, onBack }) {
               </svg>
             </motion.button>
             <div>
-              <h2 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-cream leading-tight">
-                Din <span className="text-[10px] font-display font-bold text-sky-gold uppercase tracking-widest bg-sky-sunset px-2 py-0.5 rounded ml-1 border border-sky-gold/10">Dashboard</span>
+              <h2 className="text-sm font-display uppercase tracking-widest font-extrabold text-sky-cream leading-tight flex items-center gap-2">
+                Din <span className="text-[10px] font-display font-bold text-sky-gold uppercase tracking-widest bg-sky-sunset px-2 py-0.5 rounded border border-sky-gold/10">Dashboard</span>
+                {completedActions.size > 0 && (
+                  <span className="text-[9px] font-sans font-medium text-sky-info bg-sky-info/5 border border-sky-info/20 px-2 py-0.5 rounded-full flex items-center gap-1 select-none">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-info animate-pulse" />
+                    Continuing your progress
+                  </span>
+                )}
               </h2>
               <p className="text-[9px] font-display text-sky-grey uppercase tracking-widest mt-1">
                 Business ID: <strong className="text-sky-cream">{msmeId}</strong>
@@ -466,6 +535,52 @@ export default function Dashboard({ msmeId, onBack }) {
                 </AnimatePresence>
               </div>
             </div>
+
+            {/* Your Journey Log */}
+            {journeyLog.length > 0 && (
+              <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">
+                <div className="border-b border-sky-midnight pb-3">
+                  <h3 className="text-xs font-display uppercase tracking-widest font-extrabold text-sky-info flex items-center gap-1.5">
+                    <svg className="h-4 w-4 text-sky-info" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Your Journey
+                  </h3>
+                </div>
+                <div className="flow-root">
+                  <ul className="-mb-8">
+                    {journeyLog.map((logItem, logIdx) => (
+                      <li key={logItem.action_id}>
+                        <div className="relative pb-8">
+                          {logIdx !== journeyLog.length - 1 ? (
+                            <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-sky-midnight" aria-hidden="true" />
+                          ) : null}
+                          <div className="relative flex space-x-3">
+                            <div>
+                              <span className="h-8 w-8 rounded-full bg-sky-info/10 border border-sky-info/20 flex items-center justify-center ring-8 ring-sky-card">
+                                <svg className="h-4 w-4 text-sky-info" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0 pt-1.5 flex justify-between space-x-4">
+                              <div>
+                                <p className="text-xs text-sky-cream font-sans font-medium">
+                                  You completed <span className="font-extrabold text-sky-info">"{getActionLabel(logItem.action_id)}"</span>
+                                </p>
+                              </div>
+                              <div className="text-right text-[10px] whitespace-nowrap text-sky-grey font-sans">
+                                <span>{getRelativeTime(logItem.completed_at)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             {/* What-If Simulator Panel */}
             <div className="bg-sky-card border border-sky-midnight p-6 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] space-y-4">

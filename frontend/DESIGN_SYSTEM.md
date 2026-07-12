@@ -23,6 +23,7 @@ Animation should feel *organic and confident*, never bouncy or playful — think
 | Muted Text | `#5A6B70` | Secondary text, captions, "Why This Score" section |
 | Border/Divider | `#E3E1DE` | Subtle borders, dividers |
 | Error/Alert | `#D64545` | Error states only, used sparingly |
+| Info Blue | `#2563EB` | Journey log, personalization alerts, neutral status |
 
 **Gradient (used only on the growth-ring dial):** `#B8E8C8` → `#00D66B`, applied along the fill arc as it progresses from low to high readiness.
 

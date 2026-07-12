@@ -68,7 +68,8 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest, session_id: Op
         for rec in calibration["recommendations"]
     ]
     
-    completed_list = list(get_session_completed_actions(session_id, msme_id)) if session_id else []
+    completed_dict = get_session_completed_actions(session_id, msme_id) if session_id else {}
+    completed_list = list(completed_dict.keys())
 
     # 5. Return updated days remaining, actions, and completed list
     return {
@@ -76,6 +77,7 @@ def complete_action(msme_id: str, payload: ActionCompleteRequest, session_id: Op
         "current_probability": calibration["credit_readiness_probability"],
         "top_3_actions": top_3_actions,
         "completed_actions": completed_list,
+        "completed_actions_timestamps": completed_dict,
         "msme_data": {
             "msme_id": updated_msme["msme_id"],
             "discipline_level": updated_msme["discipline_level"],

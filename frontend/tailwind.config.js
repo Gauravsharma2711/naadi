@@ -21,7 +21,8 @@ export default {
           amethyst: '#00D66B',  // Vivid Primary Green (success/growth flare)
           crimson: '#D64545',   // Alert/Error Red
           cream: '#001E2B',     // Deep text
-          grey: '#5A6B70'       // Muted text
+          grey: '#5A6B70',      // Muted text
+          info: '#2563EB'       // Informational blue for journey log and neutral status
         }
       }
     },

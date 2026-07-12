@@ -54,7 +54,8 @@ def get_msme_score(msme_id: str, session_id: Optional[str] = None):
     
     # 5. Build and return the structured response
     from app.db.database import get_session_completed_actions
-    completed_list = list(get_session_completed_actions(session_id, msme_id)) if session_id else []
+    completed_dict = get_session_completed_actions(session_id, msme_id) if session_id else {}
+    completed_list = list(completed_dict.keys())
 
     return {
         "days_remaining": calibration["days_to_ready"],
@@ -63,6 +64,7 @@ def get_msme_score(msme_id: str, session_id: Optional[str] = None):
         "shap_breakdown": shap_breakdown,
         "historical_timeline": get_msme_historical_timeline(msme_id, session_id),
         "completed_actions": completed_list,
+        "completed_actions_timestamps": completed_dict,
         "msme_data": {
             "msme_id": msme_data["msme_id"],
             "discipline_level": msme_data["discipline_level"],
