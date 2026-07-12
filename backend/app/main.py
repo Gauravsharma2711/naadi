@@ -10,7 +10,10 @@ app = FastAPI(title="Naadi (Din) API")
 # Enable CORS for hackathon demo (e.g. Claude.ai artifact browser sandbox calls)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "*",
+        "https://naadi-din-git-main-gaurav-atvercel.vercel.app"
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

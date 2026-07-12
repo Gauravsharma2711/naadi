@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV ? "http://127.0.0.1:8000" : "/api";
+const API_BASE_URL = "https://naadi-din.onrender.com";
 
 /**
  * Connects an MSME by validating the ID and linking data sources.
